@@ -10,7 +10,7 @@ For a quick comparison, of using this class vs. using PHP, let's compare one of 
 
 The index.php for this example is like so:
 
-```
+```php
 <?php
 include('functions.php');
 
@@ -85,7 +85,7 @@ else if($response['ACK'] == "Failure" || $response['ACK'] == "FailureWithWarning
 
 The equivalent with this library is:
 
-```
+```php
 <?php
 include('functions.php');
 ?>
@@ -112,7 +112,7 @@ Load /index.php in your browser.
 
 ## Limitations:
 
-The class currently only supports recurring payments as this is all that I required. 
+The class currently only supports one recurring payment as this is all that I required. 
 
 Future versions may include 
 
