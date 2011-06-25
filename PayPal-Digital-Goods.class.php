@@ -238,8 +238,6 @@ class PayPal_Digital_Goods {
 
 		$this->token = $response['TOKEN'];
 
-		error_log( 'response = ' . print_r( $response, true ) );
-
 		return $response;
 	}
 

@@ -17,8 +17,6 @@ $subscription = $paypal->get_subscription_details( 'class-properties' );
 	if( isset( $_POST['confirm'] ) && $_POST['confirm'] == "Confirm" ) {
 		$doresponse = $paypal->start_subscription();
 
-		error_log( 'do response = ' . print_r( $doresponse, true ) );
-
 		// Check Response
 		if($doresponse['ACK'] == "Success" || $doresponse['ACK'] == "SuccessWithWarning") {
 			echo "<p>Your Payment Has Completed! click <a href='check-profile.php' target='_parent'>HERE</a> to check your profile.</p>";
