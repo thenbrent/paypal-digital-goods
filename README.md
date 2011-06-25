@@ -10,7 +10,7 @@ For a quick comparison, of using this class vs. using PHP, let's compare one of 
 
 The index.php for this example is like so:
 
-``
+```
 <?php
 include('functions.php');
 
@@ -81,11 +81,11 @@ else if($response['ACK'] == "Failure" || $response['ACK'] == "FailureWithWarning
 	</script>
 </body>
 </html>
-``
+```
 
 The equivalent with this library is:
 
-``
+```
 <?php
 include('functions.php');
 ?>
@@ -98,7 +98,7 @@ include('functions.php');
 	<?php $paypal->print_buy_button(); // That's it, the class will take care of requesting the token, print the scripts etc. ?>
 </body>
 </html>
-``
+```
 
 ## Examples
 
