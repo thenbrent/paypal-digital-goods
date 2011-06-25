@@ -138,6 +138,7 @@ Future versions may include
 
 * Purchase of digital goods as well as recurring payments.
 * Method to create up to 10 different profiles in one transaction. 
+* Parsed responses from API calls with urldecoded values and keys translated into more human friendly terms
 
 
 ## Pull Requests
