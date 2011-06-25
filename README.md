@@ -10,8 +10,9 @@ This class fills in the blanks in documentation while simulatenously offering a 
 Supported PayPal API Operations:
 
 * `SetExpressCheckout` via `request_checkout_token()`
-* `GetExpressCheckoutDetails` via `get_subscription_details()`
-* `CreateRecurringPaymentsProfile via `start_subscription()`
+* `GetExpressCheckoutDetails` via `get_checkout_details()`
+* `GetRecurringPaymentsProfileDetails` via `get_subscription_details()`
+* `CreateRecurringPaymentsProfile` via `start_subscription()`
 
 
 ## Comparison
