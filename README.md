@@ -4,12 +4,14 @@
 
 This class fills in the blanks in documentation while simulatenously offering a super easy library for using the Recurring Payments API.
 
+
 ## Supported PayPal Operations
 
-* Supported PayPal API Operations:
-`SetExpressCheckout` via `request_checkout_token()`
-`GetExpressCheckoutDetails` via `get_subscription_details()`
-`CreateRecurringPaymentsProfile via `start_subscription()`
+Supported PayPal API Operations:
+
+* `SetExpressCheckout` via `request_checkout_token()`
+* `GetExpressCheckoutDetails` via `get_subscription_details()`
+* `CreateRecurringPaymentsProfile via `start_subscription()`
 
 
 ## Comparison
