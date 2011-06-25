@@ -148,5 +148,4 @@ Patches are welcome, especially those that overcome the current limitations.
 1. Fork the project.
 1. Make your feature addition or bug fix.
 1. Add tests & examples for it. This is important so I don’t break it in a future version unintentionally.
-1. Commit, do not mess with rakefile, version, or history. (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
 1. Send me a pull request. Bonus points for topic branches.
