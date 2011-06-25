@@ -4,6 +4,14 @@
 
 This class fills in the blanks in documentation while simulatenously offering a super easy library for using the Recurring Payments API.
 
+## Supported PayPal Operations
+
+* Supported PayPal API Operations:
+`SetExpressCheckout` via `request_checkout_token()`
+`GetExpressCheckoutDetails` via `get_subscription_details()`
+`CreateRecurringPaymentsProfile via `start_subscription()`
+
+
 ## Comparison
 
 For a quick comparison, of using this class vs. using PHP, let's compare one of the few examples of using the Digital Goods with Express Checkout found in this [blog post](https://www.x.com/blogs/Nate/2011/01/07/digital-goods-with-express-checkout-in-php). 
@@ -106,15 +114,35 @@ To test the library for yourself, create a sandbox business account and request 
 
 Login to this account and get your API credentials from the [API Access](https://www.sandbox.paypal.com/us/cgi-bin/webscr?cmd=_profile-api-access) page.
 
-Copy the API Credentials into /examples/functions.php
+Copy the API Credentials into ``/examples/functions.php``
 
-Load /index.php in your browser.
+Load `index.php` in your browser.
 
-## Limitations:
 
-The class currently only supports one recurring payment as this is all that I required. 
+## Glossary
+
+If you are fluent in the verbose PayPal lexicon, you will find some of the terms in this library differ to those used in PayPal's documentation. This class translates the following PayPal-isms to the human vernacular.
+
+* Recurring Payment Profile is referred to as a subscription
+* Digital Goods for Express Checkout is referred to as checkout
+
+
+## Limitations
+
+The class currently only supports one recurring payment as this is all that I require.
 
 Future versions may include 
 
 * Purchase of digital goods as well as recurring payments.
 * Method to create up to 10 different profiles in one transaction. 
+
+
+## Pull Requests
+
+Patches are welcome, especially those that overcome the current limitations. 
+
+1. Fork the project.
+1. Make your feature addition or bug fix.
+1. Add tests & examples for it. This is important so I don’t break it in a future version unintentionally.
+1. Commit, do not mess with rakefile, version, or history. (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
+1. Send me a pull request. Bonus points for topic branches.

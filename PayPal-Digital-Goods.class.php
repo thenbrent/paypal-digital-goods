@@ -4,7 +4,7 @@
  * 
  * Supported PayPal API Operations:
  * 	- SetExpressCheckout via request_checkout_token()
- * 	- GetExpressCheckoutDetails via get_details()
+ * 	- GetExpressCheckoutDetails via get_subscription_details()
  * 	- CreateRecurringPaymentsProfile via start_subscription()
  *
  * Glossary:
