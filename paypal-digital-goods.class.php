@@ -24,7 +24,8 @@
  * 	- Payments for purchasing items.
  * 	- Parsed responses from API calls with urldecoded values and keys translated into more human friendly terms.
  * 
- * License: GPL v2
+ * License: GPL v2 see license.txt
+ * URL: https://github.com/thenbrent/paypal-digital-goods
  * Copyright (C) 2011 Leonard's Ego Pty. Ltd.
  */
 
@@ -109,8 +110,8 @@ class PayPal_Digital_Goods {
 			'sandbox'         => true,
 			'version'         => '69.0',
 			'currency'        => 'USD',
-			'cancel_url'      => 'http://localhost/paypal/nate/return.php?return=cancel',
-			'return_url'      => 'http://localhost/paypal/nate/return.php?return=paid',
+			'cancel_url'      => 'http://localhost/paypal-digital-goods/examples/return.php?return=cancel',
+			'return_url'      => 'http://localhost/paypal-digital-goods/examples/return.php?return=paid',
 			'subscription'    => array(
 				'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
 				'description'        => 'Assorted Online Services Subscription',
@@ -386,9 +387,12 @@ class PayPal_Digital_Goods {
 
 
 	/**
-	 * Print the Buy (or Subscribe) button for this API object as well as the required script.
-	 * @see get_buy_button()
-	 * @see get_script()
+	 * Print the Buy (or Subscribe) button for this API object as well as the required script for the button to be used.
+	 * 
+	 * If you want to manually insert the script, @see get_buy_button() instead.
+	 * 
+	 * @uses get_buy_button()
+	 * @uses get_script()
 	 */
 	function print_buy_button(){
 		echo $this->get_buy_button();
