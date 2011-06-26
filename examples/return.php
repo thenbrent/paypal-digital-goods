@@ -1,5 +1,5 @@
 <?php
-include('functions.php');
+require_once('functions.php');
 $response = $paypal->get_checkout_details();
 $subscription = $paypal->get_subscription_details( 'class-properties' );
 ?>

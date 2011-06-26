@@ -1,6 +1,6 @@
 <?php
 
-include('../PayPal-Digital-Goods.class.php');
+require_once('../paypal-digital-goods.class.php');
 
 $credentials = array(
 	'username'  => 'your_api_username',  // For quick and dirty tests, use 'digita_1308916325_biz_api1.gmail.com',

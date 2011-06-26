@@ -1,5 +1,5 @@
 <?php
-include('functions.php');
+require_once('functions.php');
 $response = $paypal->get_subscription_details();
 
 error_log('Subscription Details = ' . print_r( $response, true ) );
