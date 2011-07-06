@@ -28,9 +28,9 @@ Copy the API Credentials into `/examples/functions.php`.
 Load `index.php` in your browser.
 
 
-### Minimum Required Example
+### Minimum Requirements
 
-The minimum requirements for creating an instance of the class is your PayPal API Credentials and 
+The minimum requirement for creating an instance of the class is to pass it your PayPal API Credentials and the return & cancel URLs.
 
 ```php
 $credentials = array(
@@ -39,15 +39,22 @@ $credentials = array(
 	'signature' => 'AFnwAcqRkyW0yPYgkjqTkIGqPbSfAyVFbnFAjXCRltVZFzlJyi2.HbxW',
 );
 
-$urls = array(
+$args = array(
 	'return_url' = 'http://localhost/paypal-digital-goods/examples/return.php?return=paid',
 	'cancel_url' = 'http://localhost/paypal-digital-goods/examples/return.php?return=cancel',
 );
 
-$paypal = new PayPal_Digital_Goods( $credentials, $urls );
+$paypal = new PayPal_Digital_Goods( $credentials, $args );
 ```
 
 This will create a $25/month subscription with the PayPal Sandbox.
+
+
+### Subscription Description
+
+To set the description a new subscriber sees when confirming the subscription with PayPal, pass a description in the `'subscription'` parameter.
+
+`$args['subscription'] = array( 'description' => 'Hacker Monthly magazine online subscription.' );`
 
 
 ### Subscription Price
