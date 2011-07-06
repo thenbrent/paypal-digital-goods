@@ -1,8 +1,8 @@
 # PayPal Digital Goods with Express Checkout Recurring Payments API PHP Library
 
-*Take a deep breath*. PayPal Digital Goods with Express Checkout Recurring Payments API, *(take another breath)* is a wonderful payment gateway with horrible documentation. 
+PayPal Digital Goods with Express Checkout Recurring Payments API, is a wonderful payment gateway with horrible documentation (and excessively verbose name). 
 
-This class fills in the blanks in documentation while simulatenously offering a super easy library for using the Recurring Payments API.
+This class strives to fill in the blanks in documentation while simultaneously offering a super easy library for using the Recurring Payments API.
 
 
 ## Supported PayPal Operations
@@ -17,13 +17,69 @@ Supported PayPal API Operations:
 
 ## Examples
 
-To test the library for yourself, create a sandbox business account and request it be set as a Digital Goods account in the [x.com forums here](https://www.x.com/thread/49892). 
+To test the library for yourself, copy the entire folder into `http://localhost/paypal-digital-goods/`.
+
+Create a sandbox seller account and request it be set as a Digital Goods account in this [x.com forums topic](https://www.x.com/thread/49892).
 
 Login to this account and get your API credentials from the [API Access](https://www.sandbox.paypal.com/us/cgi-bin/webscr?cmd=_profile-api-access) page.
 
-Copy the API Credentials into ``/examples/functions.php``
+Copy the API Credentials into `/examples/functions.php`.
 
 Load `index.php` in your browser.
+
+
+### Minimum Required Example
+
+The minimum requirements for creating an instance of the class is your PayPal API Credentials and 
+
+```php
+$credentials = array(
+	'username'  => 'digita_1308916325_biz_api1.gmail.com',
+	'password'  => '1308916362',
+	'signature' => 'AFnwAcqRkyW0yPYgkjqTkIGqPbSfAyVFbnFAjXCRltVZFzlJyi2.HbxW',
+);
+
+$urls = array(
+	'return_url' = 'http://localhost/paypal-digital-goods/examples/return.php?return=paid',
+	'cancel_url' = 'http://localhost/paypal-digital-goods/examples/return.php?return=cancel',
+);
+
+$paypal = new PayPal_Digital_Goods( $credentials, $urls );
+```
+
+This will create a $25/month subscription with the PayPal Sandbox.
+
+
+### Subscription Price
+
+To change the subscription to be $49/Month with a $79 sign-up fee, the parameters in the `'subscription'` array must be set like so. 
+
+```php
+$args['subscription'] = array(
+	'amount' = 49.00,
+	'initial_amount' = 79.00,
+	'average_amount' = 49.00 // default is 25.00 as our monthly subscription value is higher than that, we must set this
+);
+```
+
+### Subscription Duration & Frequency
+
+To change the subscription to be billed every 2 weeks for a 6 week period, the parameters in the `'subscription'` array must be set like so. 
+
+```php
+$args['subscription'] = array(
+	'period' = 'Week',
+	'frequency' = 2,
+	'total_cycles' = 6
+);
+```
+
+
+### From Sandbox to Live
+
+By default, the class uses the PayPal Sandbox. Switching from the Sandbox to the live PayPal site is easy, set the `'sandbox'` boolean flag in the `$args` array to false.
+
+`$args['sandbox'] = false;`
 
 
 ## Glossary
