@@ -15,5 +15,10 @@ $credentials = array(
 if( $credentials['username'] == 'your_api_username' || $credentials['password'] == 'your_api_password' || $credentials['signature'] == 'your_api_signature' )
 	exit( 'You must set your API credentials in /examples/functions.php for this example to work.' );
 
-$paypal = new PayPal_Digital_Goods( $credentials );
+$urls = array(
+	'return_url' = 'http://localhost/paypal-digital-goods/examples/return.php?return=paid',
+	'cancel_url' = 'http://localhost/paypal-digital-goods/examples/return.php?return=cancel',
+);
+
+$paypal = new PayPal_Digital_Goods( $credentials, $urls );
 
