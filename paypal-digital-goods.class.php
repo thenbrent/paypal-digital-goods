@@ -57,27 +57,32 @@ class PayPal_Digital_Goods {
 
 	/**
 	 * Creates a PayPal Digital Goods Object configured according to the parameters in the args associative array. 
-	 *
+	 * 
+	 * Available $args parameters:
+	 * - cancel_url, string, required. The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
+	 * - return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
+	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
+	 * - currency, string. The ISO 4217 currency code for the transaction. Default USD.
+	 * - subscription, array, details of the recurring payment profile to be created.
+	 * 		- description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
+	 * 		Subscription price parameters (default: $25 per month):
+	 * 		- amount, double, default 25.00. The price per period for the subscription.
+	 * 		- initial_amount, double, default 0. An optional sign up fee.
+	 * 		- average_amount, double, default 25.00. The average transaction amount, PayPal default is $25, only set higher if your monthly subscription value is higher
+	 * 		Subscription temporal parameters (default: bill once per month forever):
+	 * 		- start_date, date, default 24 hours in the future. The start date for the profile, defaults to one day in the future. Must take the form YYYY-MM-DDTHH:MM:SS and can not be in the past.
+	 * 		- period, Day|Week|Month|Semimonth, default Month. The unit of interval between billing.
+	 * 		- frequency, integer, default 1. How regularly to charge the amount. When period is Month, a frequency value of 1 would charge every month while a frequency value of 12 charges once every year.
+	 * 		- total_cycles, integer, default perpetuity. The total number of occasions the subscriber should be charged. When period is month and frequency is 1, 12 would continue the subscription for one year. The default value 0 will continue the payment for perpetuity.
+	 * 		Subscription trail period parameters (default: no trial period):
+	 * 		- trial_amount, double, default 0. The price per trial period.
+	 * 		- trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
+	 * 		- trial_frequency, integer, default 0. How regularly to charge the amount.
+	 * 		- trial_total_cycles, integer, default perpetuity. 
+	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 69.0
+	 * 
 	 * @param api_credentials, required, a name => value array containing your API username, password and signature.
-	 * @param args, named parameters to customise the subscription and checkout process.
-	 * 			cancel_url, string, required. The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
-	 * 			return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
-	 * 			sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site for the transaction. Default true.
-	 * 			version, string. The PayPal API version. Must be a minimum of 65.1. Default 69.0
-	 * 			currency, string. The ISO 4217 currency code for the transaction. Default USD.
-	 * 			subscription, array, details of the recurring payment profile to be created.
-	 * 				start_date, date, default 24 hours in the future. The start date for the profile, defaults to one day in the future. Must take the form YYYY-MM-DDTHH:MM:SS and can not be in the past.
-	 * 				description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
-	 * 				amount, double, default 25.00. The price per period for the subscription.
-	 * 				initial_amount, double, default 0. An optional sign up fee.
-	 * 				average_amount, double, default 25.00. The average transaction amount, PayPal default is $25, only set higher if your monthly subscription value is higher
-	 * 				period, Day|Week|Month|Semimonth, default Month. The unit of interval between billing.
-	 * 				frequency, integer, default 1. How regularly to charge the amount. When period is Month, a frequency value of 1 would charge every month while a frequency value of 12 charges once every year.
-	 * 				total_cycles, integer, default perpetuity. The total number of occasions the subscriber should be charged. When period is month and frequency is 1, 12 would continue the subscription for one year. The default value 0 will continue the payment for perpetuity.
-	 * 				trial_amount, double, default 0. The price per trial period.
-	 * 				trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
-	 * 				trial_frequency, integer, default 0. How regularly to charge the amount.
-	 * 				trial_total_cycles, integer, default perpetuity. 
+	 * @param args, named parameters to customise the subscription and checkout process. See description for available parameters.
 	 */
 	function __construct( $api_credentials, $args = array() ){
 
@@ -95,13 +100,13 @@ class PayPal_Digital_Goods {
 		$this->api_credentials = (object)$this->api_credentials; // Readbility
 
 		$default_subscription = array(
-			'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
-			'description'        => 'Assorted Online Services Subscription',
+			'description'        => 'Digital Goods Subscription',
 			// Price
 			'amount'             => '25.00',
 			'initial_amount'     => '0.00',
 			'average_amount'     => '25',
 			// Temporal Details
+			'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
 			'period'             => 'Month',
 			'frequency'          => '1',
 			'total_cycles'       => '0',
@@ -265,11 +270,10 @@ class PayPal_Digital_Goods {
 	/**
 	 * Returns information about a subscription by calling the PayPal GetRecurringPaymentsProfileDetails API method.
 	 * 
-	 * @param $from, string, default PayPal. The Subscription details can be sourced from the internal object properties or from PayPal
-	 * 
+	 * @param $from, string, default PayPal. The Subscription details can be sourced from the object's properties if you know they will be already set or from PayPal (default).
 	 */
 	function get_subscription_details( $from = 'paypal' ){
-		if( $from == 'class-properties' ){
+		if( $from == 'properties' ){
 			return $this->subscription;
 		} else {
 			//GetRecurringPaymentsProfileDetails
@@ -390,6 +394,33 @@ class PayPal_Digital_Goods {
 	function print_buy_button(){
 		echo $this->get_buy_button();
 		echo $this->get_script();
+	}
+
+
+	/**
+	 * Get the description for this subscription
+	 */
+	function get_description(){
+		return $this->subscription->description;
+	}
+
+
+	/**
+	 * Get the price for this subscription, eg. $25 per month
+	 */
+	function get_price_details(){
+		
+		$details = $this->subscription->amount;
+		
+		if( $this->subscription->frequency == 1 )
+			$details .= ' per ' . $this->subscription->period;
+		else
+			$details .= ' every ' . $this->subscription->frequency . ' ' . $this->subscription->period . 's';
+
+		if( $this->subscription->total_cycles != 0 )
+			$details .= ' for ' . $this->subscription->total_cycles . ' ' . $this->subscription->period . 's';
+
+		return $details;
 	}
 
 
