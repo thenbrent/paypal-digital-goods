@@ -99,32 +99,31 @@ class PayPal_Digital_Goods {
 		);
 		$this->api_credentials = (object)$this->api_credentials; // Readbility
 
-		$default_subscription = array(
-			'description'        => 'Digital Goods Subscription',
-			// Price
-			'amount'             => '25.00',
-			'initial_amount'     => '0.00',
-			'average_amount'     => '25',
-			// Temporal Details
-			'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
-			'period'             => 'Month',
-			'frequency'          => '1',
-			'total_cycles'       => '0',
-			// Trial Period
-			'trial_amount'       => '0.00',
-			'trial_period'       => 'Month',
-			'trial_frequency'    => '0',
-			'trial_total_cycles' => '0'
-		);
-
 		$defaults = array(
 			'sandbox'         => true,
 			'version'         => '69.0',
 			'currency'        => 'USD',
 			'return_url'      => '',
 			'cancel_url'      => '',
-			'subscription'    => $default_subscription
+			'subscription'    => array(
+				'description'        => 'Digital Goods Subscription',
+				// Price
+				'amount'             => '25.00',
+				'initial_amount'     => '0.00',
+				'average_amount'     => '25',
+				// Temporal Details
+				'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
+				'period'             => 'Month',
+				'frequency'          => '1',
+				'total_cycles'       => '0',
+				// Trial Period
+				'trial_amount'       => '0.00',
+				'trial_period'       => 'Month',
+				'trial_frequency'    => '0',
+				'trial_total_cycles' => '0'
+			)
 		);
+
 
 		$args = array_merge( $defaults, $args );
 
