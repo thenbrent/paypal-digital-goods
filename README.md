@@ -75,6 +75,22 @@ $args['subscription'] = array(
 ```
 
 
+### Trial Period
+
+You can add a trial period to your subscription. 
+
+To add a 30 day free trial period the subscription, the parameters in the `'subscription'` array must be set like so. 
+
+```php
+$args['subscription'] = array(
+	'trial_amount' = 0,
+	'trial_period' = 'Day',
+	'trial_frequency' = 30,
+	'trial_total_cycles' = 1
+);
+```
+
+
 ### From Sandbox to Live
 
 By default, the class uses the PayPal Sandbox. Switching from the Sandbox to the live PayPal site is easy, set the `'sandbox'` boolean flag in the `$args` array to false.
