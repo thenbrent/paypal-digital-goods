@@ -15,6 +15,28 @@ Supported PayPal API Operations:
 * `CreateRecurringPaymentsProfile` via `start_subscription()`
 
 
+## Examples
+
+To test the library for yourself, create a sandbox business account and request it be set as a Digital Goods account in the [x.com forums here](https://www.x.com/thread/49892). 
+
+Login to this account and get your API credentials from the [API Access](https://www.sandbox.paypal.com/us/cgi-bin/webscr?cmd=_profile-api-access) page.
+
+Copy the API Credentials into ``/examples/functions.php``
+
+Load `index.php` in your browser.
+
+
+## Glossary
+
+If you are fluent in the verbose PayPal lexicon, you will find some of the terms in this library differ to those used in PayPal's documentation. 
+
+This class translates the following PayPalisms to the human vernacular.
+
+* *Recurring Payment Profile* is referred to as a subscription
+* *Digital Goods for Express Checkout* is referred to as checkout
+* *Payment Flow* is referred to as checkout process
+
+
 ## Comparison
 
 For a quick comparison, of using this class vs. using PHP, let's compare one of the few examples of using the Digital Goods with Express Checkout found in this [blog post](https://www.x.com/blogs/Nate/2011/01/07/digital-goods-with-express-checkout-in-php). 
@@ -111,28 +133,15 @@ include('functions.php');
 </html>
 ```
 
-## Examples
-
-To test the library for yourself, create a sandbox business account and request it be set as a Digital Goods account in the [x.com forums here](https://www.x.com/thread/49892). 
-
-Login to this account and get your API credentials from the [API Access](https://www.sandbox.paypal.com/us/cgi-bin/webscr?cmd=_profile-api-access) page.
-
-Copy the API Credentials into ``/examples/functions.php``
-
-Load `index.php` in your browser.
-
-
-## Glossary
-
-If you are fluent in the verbose PayPal lexicon, you will find some of the terms in this library differ to those used in PayPal's documentation. This class translates the following PayPal-isms to the human vernacular.
-
-* Recurring Payment Profile is referred to as a subscription
-* Digital Goods for Express Checkout is referred to as checkout
-
 
 ## Limitations
 
-The class currently only supports one recurring payment as this is all that I require.
+The class currently only supports recurring payments as this is all I needed.
+
+The class also only support creating one recurring payments profile, where as PayPal docs outline that it is possible to create up to 10 different profiles in one transaction. 
+
+
+## Roadmap
 
 Future versions may include 
 
@@ -143,9 +152,19 @@ Future versions may include
 
 ## Pull Requests
 
-Patches are welcome, especially those that overcome the current limitations. 
+Patches are welcome, especially those that implement functionality to overcome the current limitations. 
+
+To submit a patch:
 
 1. Fork the project.
 1. Make your feature addition or bug fix.
-1. Add tests & examples for it. This is important so I don’t break it in a future version unintentionally.
+1. Comment your functions with a brief explanation of purpose. Comment inline only to [explain *why* your code works. Let your code explain *how*](http://www.codinghorror.com/blog/2006/12/code-tells-you-how-comments-tell-you-why.html).
+1. Add examples for any new functionality.
 1. Send me a pull request. Bonus points for topic branches.
+
+Your syntax should conform to the [WordPress Coding Standards](http://codex.wordpress.org/WordPress_Coding_Standards). 
+
+Remember, the class is written to be friendly to humans, so place special emphasis on readability. It is more important than cleverness and brevity.
+
+>Programs must be written for people to read, and only incidentally for machines to execute.
+>&#8212; [Structure and Interpretation of Computer Programs](http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-7.html)
