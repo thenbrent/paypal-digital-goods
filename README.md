@@ -10,14 +10,15 @@ This class fills in the blanks in documentation while simultaneously offering a 
 Using a distinct class for interacting with PayPal provides all the advantages you've come to love of Object-Oriented programming:
 
 * **Abstraction**: the class abstracts the complex details of the PayPal NVP API and provides simple function calls to perform common operations;
-* **Encapsulation**: by using the class to interact with PayPal, you can use the most recent API versions without changing your application's code (just update the library);
+* **Encapsulation**: by using the class to interact with PayPal, you can update your application to use the most recent API version without changing your application's code (just update the library).
 
-# Why Use this Class
+
+## Why Use _this_ Class
 
 * **Eliminates drudgery**: operations are performed only once, regardless of the number of subscriptions you create. For example, requesting a token, printing JavaScript and printing the purchase button is all done with one function `print_buy_button()`;
 * **Human friendly variable names**: To reduce request size, PayPal’s API uses shortened parameter names. As instances of the class are created server-side, it can afford to use longer, more human friendly names. For example, `'initial_amount'` refers to PayPal’s `INITAMT` parameter;
-* **Abstracting PayPalisms**: PayPal loves verbiage, I don’t. The class attempts to simplify some of PayPal terms to more colloquial terms. For example, the `get_subscription_details()` function replaces PayPal's `GetRecurringPaymentsProfileDetails` method;
-* **Not repeating code**: we only need to create one instance of the class for each subscription in our application. The credential & NVP API strings for every request are then automatically built using simple function calls.
+* **Abstracts PayPalisms**: PayPal loves verbiage, I don’t. The class attempts to simplify some of PayPal terms to more colloquial terms. For example, the `get_subscription_details()` function replaces PayPal's `GetRecurringPaymentsProfileDetails` method;
+* **Don't Repeat Code**: we only need to create one instance of the class for each subscription in our application. The credential & NVP API strings for every request are then automatically built using simple function calls.
 
 
 ## Comparison
@@ -117,9 +118,9 @@ include('functions.php');
 ```
 
 
-## Usage
+# Usage
 
-To test the library for yourself, copy the entire folder into `http://localhost/paypal-digital-goods/`.
+To test the library for yourself, copy the entire folder into `http://example.com/paypal-digital-goods/`.
 
 Create a sandbox seller account and request it be set as a Digital Goods account in this [x.com forums topic](https://www.x.com/thread/49892).
 
