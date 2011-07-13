@@ -1,43 +1,22 @@
 <?php
 /**
- * An interface for the PayPal Digital Goods for Express Checkout API with an emphasis on being friendly to humans.
+ * An interface for the PayPal Digital Goods with Express Checkout API with an emphasis on being friendly to humans.
  * 
- * Supported PayPal API Operations:
- * 	- SetExpressCheckout via request_checkout_token()
- * 	- GetExpressCheckoutDetails via get_subscription_details()
- * 	- CreateRecurringPaymentsProfile via start_subscription()
- *
- * Glossary:
- * If you are fluent in the verbose PayPal lexicon, you will find some of the terms in this library differ to those used
- * in PayPal's documentation. This class translates the following PayPal-isms to the human vernacular.
- * 	- Recurring Payment Profile is referred to as a subscription
- * 	- Digital Goods for Express Checkout is referred to as checkout
- *
- * Limitations:
- * 	The class currently only supports recurring payments as this is all that I required. Future versions may include 
- * 	purchase of digital goods as well as recurring payments.
- * 	The class also only support creating one recurring payments profile, where as PayPal docs hypothesise that is possible
- * 	to create up to 10 different profiles in one transaction. 
- * 
- * Roadmap:
- * 	Future versions will include:
- * 	- Payments for purchasing items.
- * 	- Parsed responses from API calls with urldecoded values and keys translated into more human friendly terms.
- * 
- * License: GPL v2 see license.txt
+ * License: GPLv2 see license.txt
  * URL: https://github.com/thenbrent/paypal-digital-goods
  * Copyright (C) 2011 Leonard's Ego Pty. Ltd.
  */
-
 class PayPal_Digital_Goods {
 
 	/**
 	 * A array of name value pairs representing the seller's API Username, Password & Signature. 
+	 * 
+	 * These are passed to the class via the parameters in the constructor. 
 	 */
 	private $api_credentials;
 
 	/**
-	 * Details of the recurring payment profile
+	 * Details of this particular recurring payment profile, including price, period & frequency.
 	 */
 	private $subscription;
 
@@ -48,88 +27,103 @@ class PayPal_Digital_Goods {
 
 	/**
 	 * The PayPal API Version. 
-	 * Must be 65.1 or newer for Digitial Goods. Defaults to 65.1
+	 * Must be 65.1 or newer for Digital Goods. Defaults to 69
 	 */
 	private $version;
 
 	/**
-	 * The URL 
+	 * The PayPal API URL Defaults to https://api-3t.sandbox.paypal.com/nvp when in
+	 * sandbox mode and https://api-3t.paypal.com/nvp when live.
 	 */
-	private $endpoint; //"https://api-3t.sandbox.paypal.com/nvp"
+	private $endpoint;
 
 	/**
-	 * The URL for redirecting the user to login and confirm the payment
+	 * The PayPal URL for initialing the popup payment process.
+	 * 
+	 * Defaults to https://www.sandbox.paypal.com/incontext?token=**** for sandbox mode
+	 * and https://www.paypal.com/incontext?token=**** in live mode.
 	 */
-	private $redirect_url;
+	private $checkout_url;
 
 	/**
-	 * The URL to redirect to upon completion of a successful payment
+	 * The URL on your site that the purchaser is sent to upon completing checkout.
 	 */
 	private $return_url;
-	
+
 	/**
-	 * The URL to redirect to when a payment is canceled
+	 * The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
 	 */
 	private $cancel_url;
 
 	/**
-	 * Create a PayPal Digital Goods Object. 
-	 *
+	 * Creates a PayPal Digital Goods Object configured according to the parameters in the args associative array. 
+	 * 
+	 * Available $args parameters:
+	 * - cancel_url, string, required. The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
+	 * - return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
+	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
+	 * - currency, string. The ISO 4217 currency code for the transaction. Default USD.
+	 * - subscription, array, details of the recurring payment profile to be created.
+	 * 		- description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
+	 * 		Subscription price parameters (default: $25 per month):
+	 * 		- amount, double, default 25.00. The price per period for the subscription.
+	 * 		- initial_amount, double, default 0. An optional sign up fee.
+	 * 		- average_amount, double, default 25.00. The average transaction amount, PayPal default is $25, only set higher if your monthly subscription value is higher
+	 * 		Subscription temporal parameters (default: bill once per month forever):
+	 * 		- start_date, date, default 24 hours in the future. The start date for the profile, defaults to one day in the future. Must take the form YYYY-MM-DDTHH:MM:SS and can not be in the past.
+	 * 		- period, Day|Week|Month|Semimonth, default Month. The unit of interval between billing.
+	 * 		- frequency, integer, default 1. How regularly to charge the amount. When period is Month, a frequency value of 1 would charge every month while a frequency value of 12 charges once every year.
+	 * 		- total_cycles, integer, default perpetuity. The total number of occasions the subscriber should be charged. When period is month and frequency is 1, 12 would continue the subscription for one year. The default value 0 will continue the payment for perpetuity.
+	 * 		Subscription trail period parameters (default: no trial period):
+	 * 		- trial_amount, double, default 0. The price per trial period.
+	 * 		- trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
+	 * 		- trial_frequency, integer, default 0. How regularly to charge the amount.
+	 * 		- trial_total_cycles, integer, default perpetuity. 
+	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 69.0
+	 * 
 	 * @param api_credentials, required, a name => value array containing your API username, password and signature.
-	 * @param args, optional but recommended
-	 * 			sandbox, boolean, default true, flag to indicate whether to use the PayPal Sandbox or live PayPal site for the payment
-	 * 			version, string, default 69.0
-	 * 			currency, strign, default 
-	 * 			subscription, array, details of the recurring payment profile to be created
-	 * 				start_date, date, default 24 hours in the future. The start date for the profile, defaults to one day in the future. Must take the form YYYY-MM-DDTHH:MM:SS and can not be in the past.
-	 * 				description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
-	 * 				amount, double, default 25.00. The price per period for the subscription.
-	 * 				initial_amount, double, default 0. An optional sign up fee.
-	 * 				average_amount, double, default 25.00. The average transaction amount, PayPal default is $25, only set higher if your monthly subscription value is higher
-	 * 				period, Day|Week|Month|Semimonth, default Month. The unit of interval between billing.
-	 * 				frequency, integer, default 1. How regularly to charge the amount. When period is Month, a frequency value of 1 would charge every month while a frequency value of 12 charges once every year.
-	 * 				total_cycles, integer, default perpetuity. The total number of occasions the subscriber should be charged. When period is month and frequency is 1, 12 would continue the subscription for one year. The default value 0 will continue the payment for perpetuity.
-	 * 				trial_amount, double, default 0. The price per trial period.
-	 * 				trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
-	 * 				trial_frequency, integer, default 0. How regularly to charge the amount.
-	 * 				trial_total_cycles, integer, default perpetuity. 
+	 * @param args, named parameters to customise the subscription and checkout process. See description for available parameters.
 	 */
 	function __construct( $api_credentials, $args = array() ){
 
-		// API Credentials are required
-		$this->api_credentials = array( // Long form to show the required structure of the array
+		if( empty( $api_credentials['username'] ) || empty( $api_credentials['password'] ) || empty( $api_credentials['signature'] ) )
+			exit( 'You must specify your PayPal API username, password & signature in the $api_credentials array. For details of how to ' );
+		elseif( empty( $args['return_url'] ) || empty( $args['cancel_url'] ) )
+			exit( 'You must specify a return_url & cancel_url.' );
+
+		// Long form to show the required structure of the array
+		$this->api_credentials = array(
 			'username'  => $api_credentials['username'],
 			'password'  => $api_credentials['password'],
 			'signature' => $api_credentials['signature']
 		);
+		$this->api_credentials = (object)$this->api_credentials; // Readbility
 
-		$this->api_credentials = (object)$this->api_credentials; // 'cause-it-looks-betta-ay
-
-		// All other arguments are optional
 		$defaults = array(
 			'sandbox'         => true,
 			'version'         => '69.0',
 			'currency'        => 'USD',
-			'cancel_url'      => 'http://localhost/paypal-digital-goods/examples/return.php?return=cancel',
-			'return_url'      => 'http://localhost/paypal-digital-goods/examples/return.php?return=paid',
+			'return_url'      => '',
+			'cancel_url'      => '',
 			'subscription'    => array(
-				'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
-				'description'        => 'Assorted Online Services Subscription',
-				// Price of the Subscription
+				'description'        => 'Digital Goods Subscription',
+				// Price
 				'amount'             => '25.00',
 				'initial_amount'     => '0.00',
 				'average_amount'     => '25',
-				// Temporal Details of the Subscription
+				// Temporal Details
+				'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
 				'period'             => 'Month',
 				'frequency'          => '1',
 				'total_cycles'       => '0',
-				// Trial Period details
+				// Trial Period
 				'trial_amount'       => '0.00',
 				'trial_period'       => 'Month',
 				'trial_frequency'    => '0',
 				'trial_total_cycles' => '0'
 			)
 		);
+
 
 		$args = array_merge( $defaults, $args );
 
@@ -139,7 +133,7 @@ class PayPal_Digital_Goods {
 		$this->subscription = (object)$args['subscription'];
 
 		$this->endpoint     = ( $args['sandbox'] ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
-		$this->redirect_url = ( $args['sandbox'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
+		$this->checkout_url = ( $args['sandbox'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
 
 		$this->return_url	= $args['return_url'];
 		$this->cancel_url	= $args['cancel_url'];
@@ -147,6 +141,8 @@ class PayPal_Digital_Goods {
 
 	/**
 	 * Map this object's API credentials to the PayPal NVP format for posting to the API.
+	 * 
+	 * Abstracted from @see get_payment_details_url for readability. 
 	 */
 	function get_api_credentials_url(){
 
@@ -157,7 +153,7 @@ class PayPal_Digital_Goods {
 	}
 
 	/**
-	 * Map this object's payment details to the PayPal NVP format for posting to the API.
+	 * Map this object's transaction details to the PayPal NVP format for posting to PayPal.
 	 */
 	function get_payment_details_url( $action ){
 
@@ -273,11 +269,10 @@ class PayPal_Digital_Goods {
 	/**
 	 * Returns information about a subscription by calling the PayPal GetRecurringPaymentsProfileDetails API method.
 	 * 
-	 * @param $from, string, default PayPal. The Subscription details can be sourced from the internal object properties or from PayPal
-	 * 
+	 * @param $from, string, default PayPal. The Subscription details can be sourced from the object's properties if you know they will be already set or from PayPal (default).
 	 */
 	function get_subscription_details( $from = 'paypal' ){
-		if( $from == 'class-properties' ){
+		if( $from == 'properties' ){
 			return $this->subscription;
 		} else {
 			//GetRecurringPaymentsProfileDetails
@@ -300,16 +295,15 @@ class PayPal_Digital_Goods {
 	/**
 	 * Post to PayPal
 	 * 
-	 * Makes an API call using an NVP String and an Endpoint
+	 * Makes an API call using an NVP String and an Endpoint. Based on code available here: https://www.x.com/blogs/Nate/2011/01/07/digital-goods-with-express-checkout-in-php
 	 * 
-	 * Based on code available here: https://www.x.com/blogs/Nate/2011/01/07/digital-goods-with-express-checkout-in-php
+	 * @param action, string, required. The API operation to be performed, eg. GetExpressCheckoutDetails. The action is abstracted from you (the developer) by the appropriate helper function eg. GetExpressCheckoutDetails via get_checkout_details()
 	 */
 	function call_paypal( $action ){
 
-		// Create the API string according to the specified action
+		// Use the one function for all PayPal API operations
 		$api_parameters = $this->get_payment_details_url( $action );
 
-		// Create a CURL object for the PayPal API endpoint
 		$ch = curl_init();
 		curl_setopt( $ch, CURLOPT_URL, $this->endpoint );
 		curl_setopt( $ch, CURLOPT_VERBOSE, 1 );
@@ -320,19 +314,19 @@ class PayPal_Digital_Goods {
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
 		curl_setopt( $ch, CURLOPT_POST, 1 );
 
-		// Set the API parameters to post for this transaction
+		// Set the API parameters for this transaction
 		curl_setopt( $ch, CURLOPT_POSTFIELDS, $api_parameters );
 
 		// Request response from PayPal
 		$response = curl_exec( $ch );
 
-		// Return immediately if no response was received from PayPal
+		// If no response was received from PayPal there is no point parsing the response
 		if( ! $response ) {
 			$response = $action . " failed: " . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')';
 			return $response;
 		}
 
-		// Convert the response into a more usable associative array
+		// An associative array is more usable than a parameter string
 		$response        = explode( '&', $response );
 		$parsed_response = array();
 		foreach ( $response as $value ) {
@@ -352,11 +346,11 @@ class PayPal_Digital_Goods {
 
 
 	/**
-	 * The Javascript for invoking the digital goods payments flow.
+	 * The Javascript to invoke the digital goods checkout process.
 	 * 
 	 * No need to call this function manually, required scripts are automatically printed with @see print_buy_buttion(). 
-	 * In fact, you're better off not to print this script manually, because if it is printed before the button, the
-	 * iframe won't be properly linked.
+	 * If you do print this script manually, print it after the button in the DOM to ensure the 
+	 * click event is properly hooked.
 	 */
 	function get_script( $element_id = '' ){
 		
@@ -373,23 +367,25 @@ class PayPal_Digital_Goods {
 
 
 	/**
-	 * The Buy (or Subscribe) button for your page. 
+	 * Create and return the Buy (or Subscribe) button for your page. 
 	 * 
-	 * Before printing the button, this function 
+	 * PayPal requires a token for checkout, so this function takes care of requesting the token. 
 	 */
 	function get_buy_button(){
 		if( empty( $this->token ) ) {
 			$this->request_checkout_token();
 		}
 
-		return '<a href="' . $this->redirect_url . $this->token . '" id="paypal-submit"><img src="https://www.paypal.com/en_US/i/btn/btn_dg_pay_w_paypal.gif" border="0" /></a>';
+		return '<a href="' . $this->checkout_url . $this->token . '" id="paypal-submit"><img src="https://www.paypal.com/en_US/i/btn/btn_dg_pay_w_paypal.gif" border="0" /></a>';
 	}
 
 
 	/**
-	 * Print the Buy (or Subscribe) button for this API object as well as the required script for the button to be used.
+	 * Print the Buy (or Subscribe) button for this API object as well as the scripts 
+	 * required by the button.
 	 * 
-	 * If you want to manually insert the script, @see get_buy_button() instead.
+	 * If you want to manually insert the script at a different position in your page,
+	 * @see get_buy_button().
 	 * 
 	 * @uses get_buy_button()
 	 * @uses get_script()
@@ -401,10 +397,37 @@ class PayPal_Digital_Goods {
 
 
 	/**
+	 * Get the description for this subscription
+	 */
+	function get_description(){
+		return $this->subscription->description;
+	}
+
+
+	/**
+	 * Get the price for this subscription, eg. $25 per month
+	 */
+	function get_price_details(){
+		
+		$details = $this->subscription->amount;
+		
+		if( $this->subscription->frequency == 1 )
+			$details .= ' per ' . $this->subscription->period;
+		else
+			$details .= ' every ' . $this->subscription->frequency . ' ' . $this->subscription->period . 's';
+
+		if( $this->subscription->total_cycles != 0 )
+			$details .= ' for ' . $this->subscription->total_cycles . ' ' . $this->subscription->period . 's';
+
+		return $details;
+	}
+
+
+	/**
 	 * Takes a PayPal API Key and maps it to a more human friendly term. 
 	 * 
-	 * Has varying degrees of usefulness, keys like TOKEN are intelligible, while keys like 
-	 * 
+	 * Has varying degrees of usefulness, keys like TOKEN are intelligible, 
+	 * while keys like AMT are ambiguous.
 	 */
 	function map_for_human( $key ){
 
@@ -413,7 +436,7 @@ class PayPal_Digital_Goods {
 				$key = 'amount';
 				break;
 		}
-		
+
 		return $key;
 	}
 

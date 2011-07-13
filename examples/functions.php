@@ -1,4 +1,8 @@
 <?php
+/**
+ * A global variable for storing our PayPal Digital Goods Object
+ */
+global $paypal;
 
 require_once('../paypal-digital-goods.class.php');
 
@@ -9,9 +13,12 @@ $credentials = array(
 );
 
 if( $credentials['username'] == 'your_api_username' || $credentials['password'] == 'your_api_password' || $credentials['signature'] == 'your_api_signature' )
-	exit("You must set your API credentials in functions.php");
+	exit( 'You must set your API credentials in /examples/functions.php for this example to work.' );
 
-global $paypal;
+$urls = array(
+	'return_url' = 'http://localhost/paypal-digital-goods/examples/return.php?return=paid',
+	'cancel_url' = 'http://localhost/paypal-digital-goods/examples/return.php?return=cancel',
+);
 
-$paypal = new PayPal_Digital_Goods( $credentials );
+$paypal = new PayPal_Digital_Goods( $credentials, $urls );
 
