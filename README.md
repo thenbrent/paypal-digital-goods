@@ -1,18 +1,8 @@
-# PayPal Digital Goods with Express Checkout Recurring Payments API PHP Library
+# Recurring Payments with PayPal Digital Goods for Express Checkout PHP Library
 
-*Take a deep breath*. PayPal Digital Goods with Express Checkout Recurring Payments API, *(take another breath)* is a wonderful payment gateway with horrible documentation. 
+Recurring Payments with PayPal Digital Goods for Express Checkout is a wonderful payment gateway with disjointed documentation (and an overly verbose name). 
 
-This class fills in the blanks in documentation while simulatenously offering a super easy library for using the Recurring Payments API.
-
-
-## Supported PayPal Operations
-
-Supported PayPal API Operations:
-
-* `SetExpressCheckout` via `request_checkout_token()`
-* `GetExpressCheckoutDetails` via `get_checkout_details()`
-* `GetRecurringPaymentsProfileDetails` via `get_subscription_details()`
-* `CreateRecurringPaymentsProfile` via `start_subscription()`
+This class fills in the blanks in documentation while simultaneously offering a library for using the Recurring Payments API.
 
 
 ## Comparison
@@ -120,6 +110,16 @@ Login to this account and get your API credentials from the [API Access](https:/
 Copy the API Credentials into ``/examples/functions.php``
 
 Load `index.php` in your browser.
+
+
+## Supported PayPal Operations
+
+Supported PayPal API Operations:
+
+* `SetExpressCheckout` via `request_checkout_token()`
+* `GetExpressCheckoutDetails` via `get_checkout_details()`
+* `GetRecurringPaymentsProfileDetails` via `get_subscription_details()`
+* `CreateRecurringPaymentsProfile` via `start_subscription()`
 
 
 ## Glossary
