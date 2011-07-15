@@ -155,7 +155,7 @@ class PayPal_Digital_Goods {
 	/**
 	 * Map this object's transaction details to the PayPal NVP format for posting to PayPal.
 	 */
-	function get_payment_details_url( $action ){
+	function get_payment_details_url( $action, $profile_id = '' ){
 
 		if( empty( $this->token ) && isset( $_GET['token'] ) )
 			$this->token = $_GET['token'];
@@ -211,7 +211,7 @@ class PayPal_Digital_Goods {
 		} elseif ( 'GetRecurringPaymentsProfileDetails' == $action ) {
 
 			$api_request .= '&METHOD=GetRecurringPaymentsProfileDetails'
-						  . '&ProfileID=' . 'I%2d17ERNH4GT97W'; // testing
+						  . '&ProfileID=' . urlencode( $profile_id );
 
 		}
 
@@ -271,13 +271,9 @@ class PayPal_Digital_Goods {
 	 * 
 	 * @param $from, string, default PayPal. The Subscription details can be sourced from the object's properties if you know they will be already set or from PayPal (default).
 	 */
-	function get_subscription_details( $from = 'paypal' ){
-		if( $from == 'properties' ){
-			return $this->subscription;
-		} else {
-			//GetRecurringPaymentsProfileDetails
-			return $this->call_paypal( 'GetRecurringPaymentsProfileDetails' );
-		}
+	function get_subscription_details( $profile_id, $from = '' ){
+
+		return $this->call_paypal( 'GetRecurringPaymentsProfileDetails', $profile_id );
 	}
 
 
@@ -299,10 +295,10 @@ class PayPal_Digital_Goods {
 	 * 
 	 * @param action, string, required. The API operation to be performed, eg. GetExpressCheckoutDetails. The action is abstracted from you (the developer) by the appropriate helper function eg. GetExpressCheckoutDetails via get_checkout_details()
 	 */
-	function call_paypal( $action ){
+	function call_paypal( $action, $profile_id = '' ){
 
 		// Use the one function for all PayPal API operations
-		$api_parameters = $this->get_payment_details_url( $action );
+		$api_parameters = $this->get_payment_details_url( $action, $profile_id );
 
 		$ch = curl_init();
 		curl_setopt( $ch, CURLOPT_URL, $this->endpoint );
@@ -321,10 +317,8 @@ class PayPal_Digital_Goods {
 		$response = curl_exec( $ch );
 
 		// If no response was received from PayPal there is no point parsing the response
-		if( ! $response ) {
-			$response = $action . " failed: " . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')';
-			return $response;
-		}
+		if( ! $response )
+			die($action . ' failed: ' . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')');
 
 		// An associative array is more usable than a parameter string
 		$response        = explode( '&', $response );
@@ -332,14 +326,15 @@ class PayPal_Digital_Goods {
 		foreach ( $response as $value ) {
 			$temp = explode( '=', $value );
 			if( sizeof( $temp ) > 1 ) {
-				$parsed_response[$temp[0]] = $temp[1];
+				$parsed_response[$temp[0]] = urldecode( $temp[1] );
 			}
 		}
 
-		if( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) ) {
-			$response = "Invalid HTTP Response for POST request($api_parameters) to " . $this->endpoint;
-			return $response;
-		}
+		if( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) )
+			die("Invalid HTTP Response for POST request($api_parameters) to " . $this->endpoint);
+
+		if( $parsed_response['ACK'] == 'Failure' )
+			die( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
 
 		return $parsed_response;
 	}
@@ -405,21 +400,98 @@ class PayPal_Digital_Goods {
 
 
 	/**
-	 * Get the price for this subscription, eg. $25 per month
+	 * Returns a string representing the details of the subscription. 
+	 * 
+	 * For example "$10 sign-up fee then $20 per Month for 3 Months". 
+	 * 
+	 * @param $echo bool, Optionally print the string before returning it.
 	 */
-	function get_price_details(){
-		
-		$details = $this->subscription->amount;
-		
-		if( $this->subscription->frequency == 1 )
-			$details .= ' per ' . $this->subscription->period;
+	function get_subscription_string( $echo = false ){
+
+		$subscription_details = '';
+
+		if( $this->subscription->initial_amount != '0.00' )
+			$subscription_details .= sprintf( '%s%s sign-up fee then', $this->get_currency_symbol(), $this->subscription->initial_amount );
+
+		if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
+			$subscription_details .= sprintf( ' %s %s trial period', $this->subscription->trial_total_cycles, strtolower( $this->subscription->trial_period ) );
+			if( $this->subscription->trial_amount > '0.00' ) {
+				if( $this->subscription->trial_frequency > 1 )
+					$subscription_details .= sprintf( ' of %s%s every %s %ss', $this->get_currency_symbol(), $this->subscription->trial_amount, $this->subscription->trial_frequency, strtolower( $this->subscription->trial_period ) );
+				else
+					$subscription_details .= sprintf( ' of %s%s per %s', $this->get_currency_symbol(), $this->subscription->trial_amount, strtolower( $this->subscription->trial_period ) );
+			} else {
+				
+			}
+		}
+
+		if( $this->subscription->frequency > 1 )
+			$subscription_details .= sprintf( ' %s%s every %s %ss', $this->get_currency_symbol(), $this->subscription->amount, $this->subscription->frequency, strtolower( $this->subscription->period ) );
 		else
-			$details .= ' every ' . $this->subscription->frequency . ' ' . $this->subscription->period . 's';
+			$subscription_details .= sprintf( ' %s%s per %s', $this->get_currency_symbol(), $this->subscription->amount, strtolower( $this->subscription->period ) );
 
 		if( $this->subscription->total_cycles != 0 )
-			$details .= ' for ' . $this->subscription->total_cycles . ' ' . $this->subscription->period . 's';
+			$subscription_details .= sprintf( ' for %s %ss', $this->subscription->total_cycles, strtolower( $this->subscription->period ) );
 
-		return $details;
+		return $subscription_details;
+	}
+
+
+	/**
+	 * Get the symbol associated with a currency, optionally specified with '$currency_code' parameter. 
+	 * 
+	 * Will always return the symbol and can optionally also print the symbol.
+	 * 
+	 * @param $currency_code, string, optional, the ISO 4217 Code of the currency for which you want the Symbol, default the currency code of this object
+	 * @param $echo bool, Optionally print the symbol before returning it.
+	 **/
+	function get_currency_symbol( $currency_code = '', $echo = false ){
+
+		if( empty( $currency_code ) )
+			$currency_code = $this->currency;
+
+		switch( $currency_code ) {
+			case 'AUD' :
+			case 'CAD' :
+			case 'NZD' :
+			case 'SGD' :
+			case 'HKD' :
+			case 'TWD' :
+			case 'USD' :
+				$currency_symbol = '$';
+				break;
+			case 'DKK' :
+			case 'NOK' :
+			case 'SEK' :
+				$currency_symbol = 'kr';
+				break;
+			case 'EUR' :
+				$currency_symbol = '&euro;';
+				break;
+			case 'GBP' :
+				$currency_symbol = '&pound;';
+				break;
+			case 'JPY' :
+				$currency_symbol = '&yen;';
+				break;
+			case 'CZK' :
+				$currency_symbol = 'Kč';
+				break;
+			case 'HUF' :
+				$currency_symbol = 'Ft';
+				break;
+			case 'PLN' :
+				$currency_symbol = 'zł';
+				break;
+			case 'CHF' :
+				$currency_symbol = 'CHF';
+				break;
+		}
+
+		if( $echo )
+			echo $currency_symbol;
+
+		return $currency_symbol;
 	}
 
 
