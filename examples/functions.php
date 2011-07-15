@@ -17,8 +17,16 @@ if( $credentials['username'] == 'your_api_username' || $credentials['password'] 
 	exit( 'You must set your API credentials in /examples/functions.php for this example to work.' );
 
 $args = array(
-	'return_url' => get_script_uri( 'return.php' ) . '?paypal=paid',
-	'cancel_url' => get_script_uri( 'return.php' ) . '?paypal=cancel',
+	'return_url' => get_script_uri( 'return.php?paypal=paid' ),
+	'cancel_url' => get_script_uri( 'return.php?paypal=cancel' ),
+	'subscription' => array(
+		'amount'             => '2.00',
+		'initial_amount'     => '2.00',
+		'average_amount'     => '25',
+		'period'             => 'Week',
+		'frequency'          => '1', 
+		'total_cycles'       => '4',
+	)
 );
 
 $paypal = new PayPal_Digital_Goods( $credentials, $args );
