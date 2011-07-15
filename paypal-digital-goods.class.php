@@ -103,8 +103,6 @@ class PayPal_Digital_Goods {
 			'sandbox'         => true,
 			'version'         => '76.0',
 			'currency'        => 'USD',
-			'return_url'      => '',
-			'cancel_url'      => '',
 			'subscription'    => array(
 				'description'        => 'Digital Goods Subscription',
 				// Price
@@ -124,7 +122,7 @@ class PayPal_Digital_Goods {
 			)
 		);
 
-
+		$args['subscription'] = array_merge( $defaults['subscription'], $args['subscription'] );
 		$args = array_merge( $defaults, $args );
 
 		$this->version      = $args['version'];
@@ -414,14 +412,14 @@ class PayPal_Digital_Goods {
 			$subscription_details .= sprintf( '%s%s sign-up fee then', $this->get_currency_symbol(), $this->subscription->initial_amount );
 
 		if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
-			$subscription_details .= sprintf( ' %s %s trial period', $this->subscription->trial_total_cycles, strtolower( $this->subscription->trial_period ) );
+			$subscription_details .= sprintf( ' %s %s', $this->subscription->trial_total_cycles, strtolower( $this->subscription->trial_period ) );
 			if( $this->subscription->trial_amount > '0.00' ) {
 				if( $this->subscription->trial_frequency > 1 )
-					$subscription_details .= sprintf( ' of %s%s every %s %ss', $this->get_currency_symbol(), $this->subscription->trial_amount, $this->subscription->trial_frequency, strtolower( $this->subscription->trial_period ) );
+					$subscription_details .= sprintf( ' trial period charged at %s%s every %s %ss followed by', $this->get_currency_symbol(), $this->subscription->trial_amount, $this->subscription->trial_frequency, strtolower( $this->subscription->trial_period ) );
 				else
-					$subscription_details .= sprintf( ' of %s%s per %s', $this->get_currency_symbol(), $this->subscription->trial_amount, strtolower( $this->subscription->trial_period ) );
+					$subscription_details .= sprintf( ' trial period charged at %s%s per %s followed by', $this->get_currency_symbol(), $this->subscription->trial_amount, strtolower( $this->subscription->trial_period ) );
 			} else {
-				
+					$subscription_details .= sprintf( ' free trial period followed by' );
 			}
 		}
 
