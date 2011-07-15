@@ -1,14 +1,17 @@
 <?php
-// Create our PayPal Object
-require_once('functions.php');
+require_once( 'functions.php' );
 ?>
 <html>
 <head>
-	<title>PayPal - Digital Goods with Express Checkout</title>
+	<title>PayPal - Digital Goods for Express Checkout Example</title>
+	<link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-	<p><?php echo $paypal->get_description(); ?></p>
-	<p>Subscriptions are only <?php echo $paypal->get_price_details(); ?>.</p>
-	<?php $paypal->print_buy_button(); // That's it, the class will take care of requesting the token, print the scripts etc. ?>
+	<div class="container">
+		<h2>PayPal Recurring Payments Demo</h2>
+		<p><b>Description:</b> <?php echo $paypal->get_description(); ?></p>
+		<p><b>Subscription details:</b> <?php echo $paypal->get_subscription_string(); ?>.</p>
+		<?php $paypal->print_buy_button(); ?>
+	</div>
 </body>
 </html>
