@@ -27,7 +27,7 @@ class PayPal_Digital_Goods {
 
 	/**
 	 * The PayPal API Version. 
-	 * Must be 65.1 or newer for Digital Goods. Defaults to 69
+	 * Must be 65.1 or newer for Digital Goods. Defaults to 76
 	 */
 	private $version;
 
@@ -79,7 +79,7 @@ class PayPal_Digital_Goods {
 	 * 		- trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
 	 * 		- trial_frequency, integer, default 0. How regularly to charge the amount.
 	 * 		- trial_total_cycles, integer, default perpetuity. 
-	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 69.0
+	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 76.0
 	 * 
 	 * @param api_credentials, required, a name => value array containing your API username, password and signature.
 	 * @param args, named parameters to customise the subscription and checkout process. See description for available parameters.
@@ -101,7 +101,7 @@ class PayPal_Digital_Goods {
 
 		$defaults = array(
 			'sandbox'         => true,
-			'version'         => '69.0',
+			'version'         => '76.0',
 			'currency'        => 'USD',
 			'return_url'      => '',
 			'cancel_url'      => '',
