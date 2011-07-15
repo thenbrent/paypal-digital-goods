@@ -20,9 +20,8 @@ $args = array(
 	'return_url' => get_script_uri( 'return.php?paypal=paid' ),
 	'cancel_url' => get_script_uri( 'return.php?paypal=cancel' ),
 	'subscription' => array(
-		'amount'             => '2.00',
+		'amount'             => '10.00',
 		'initial_amount'     => '2.00',
-		'average_amount'     => '25',
 		'period'             => 'Week',
 		'frequency'          => '1', 
 		'total_cycles'       => '4',
