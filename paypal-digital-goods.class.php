@@ -118,7 +118,9 @@ class PayPal_Digital_Goods {
 				'trial_amount'       => '0.00',
 				'trial_period'       => 'Month',
 				'trial_frequency'    => '0',
-				'trial_total_cycles' => '0'
+				'trial_total_cycles' => '0',
+				// Miscellaneous
+				'add_to_next_bill'  => true,
 			)
 		);
 
@@ -195,11 +197,14 @@ class PayPal_Digital_Goods {
 
 			// Maybe add a trial period
 			if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
-			$api_request  .=  '&TRIALAMT=' . urlencode( $this->subscription->trial_amount )
-							. '&TRIALBILLINGPERIOD=' . urlencode( $this->subscription->trial_period )
-							. '&TRIALBILLINGFREQUENCY=' . urlencode( $this->subscription->trial_frequency )
-							. '&TRIALTOTALBILLINGCYCLES=' . urlencode( $this->subscription->trial_total_cycles );
+				$api_request  .=  '&TRIALAMT=' . urlencode( $this->subscription->trial_amount )
+								. '&TRIALBILLINGPERIOD=' . urlencode( $this->subscription->trial_period )
+								. '&TRIALBILLINGFREQUENCY=' . urlencode( $this->subscription->trial_frequency )
+								. '&TRIALTOTALBILLINGCYCLES=' . urlencode( $this->subscription->trial_total_cycles );
 			}
+
+			if( $this->subscription->add_to_next_bill == true )
+				$api_request  .= '&AUTOBILLOUTAMT=AddToNextBilling';
 
 		} elseif ( 'GetExpressCheckoutDetails' == $action ) {
 
