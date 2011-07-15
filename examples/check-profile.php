@@ -1,15 +1,22 @@
 <?php
-require_once('functions.php');
-$response = $paypal->get_subscription_details();
+require_once( 'functions.php' );
 
-error_log('Subscription Details = ' . print_r( $response, true ) );
+if( ! isset( $_GET['profile_id'] ) )
+	die('Check Profile Requires a profile_id specified in the URL ($_GET)');
 
 ?>
 <html>
 <head>
-	<title>PayPal Profile Checked</title>
+	<title>PayPal Recurring Payment Profile</title>
+	<link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-	<p>Check your error log, narf.</p>
+	<div class="container" style="width: 550px;">
+		<h2>PayPal Subscription Details</h2>
+		<pre>
+$paypal->get_subscription_details( $_GET['profile_id'] ) ); = 
+<? print_r( $paypal->get_subscription_details( $_GET['profile_id'] ) ); ?>
+		</pre>
+	<div>
 </body>
 </html>
