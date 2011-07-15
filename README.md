@@ -1,29 +1,21 @@
 # Recurring Payments with PayPal Digital Goods for Express Checkout PHP Library
 
-Recurring Payments with PayPal Digital Goods for Express Checkout is a wonderful payment gateway with disjointed documentation (and an unfortunately verbose name). 
+PayPal's Digital Goods subscription service is a wonderful payment solution with disjointed documentation (and an unfortunately verbose name).
 
-This class fills in the blanks in documentation while simultaneously offering a library for using the Recurring Payments API.
+This class connect the dots in the documentation while also offering a human friendly library for using the Recurring Payments API.
 
 
 ## Why Use a Class
 
 Using a distinct class for interacting with PayPal provides all the advantages you've come to love of Object-Oriented programming:
 
-* **Abstraction**: the class abstracts the complex details of the PayPal NVP API and provides simple function calls to perform common operations;
-* **Encapsulation**: by using the class to interact with PayPal, you can update your application to use the most recent API version without changing your application's code (just update the library).
-
-
-## Why Use _this_ Class
-
-* **Eliminates drudgery**: operations are performed only once, regardless of the number of subscriptions you create. For example, requesting a token, printing JavaScript and printing the purchase button is all done with one function `print_buy_button()`;
-* **Human friendly variable names**: To reduce request size, PayPal’s API uses shortened parameter names. As instances of the class are created server-side, it can afford to use longer, more human friendly names. For example, `'initial_amount'` refers to PayPal’s `INITAMT` parameter;
-* **Abstracts PayPalisms**: PayPal loves verbiage, I don’t. The class attempts to simplify some of PayPal terms to more colloquial terms. For example, the `get_subscription_details()` function replaces PayPal's `GetRecurringPaymentsProfileDetails` method;
-* **Don't Repeat Code**: we only need to create one instance of the class for each subscription in our application. The credential & NVP API strings for every request are then automatically built using simple function calls.
+* **Abstraction**: the complexity of the PayPal NVP API is hidden behind simple function calls for common operations.
+* **Encapsulation**: update your application to use the most recent version of the API without changing your application's code.
 
 
 ## Comparison
 
-For a quick comparison, of using this class vs. using PHP, let's compare one of the few examples of using the Digital Goods with Express Checkout found in this [blog post](https://www.x.com/blogs/Nate/2011/01/07/digital-goods-with-express-checkout-in-php). 
+For a quick comparison, of using this class vs. plain PHP, let's compare one the example found in this [blog post](https://www.x.com/blogs/Nate/2011/01/07/digital-goods-with-express-checkout-in-php). 
 
 The index.php for this example is like so:
 
@@ -118,22 +110,29 @@ include('functions.php');
 ```
 
 
+# Live Demo
+
+Want to see a live example of Recurring Payments with PayPal's Digital Goods for Express Checkout? 
+
+Take a look at my [Recurring Payments Demo](http://paypal.brentshepherd.com/).
+
+
 # Usage
 
-To test the library for yourself, copy the entire folder into `http://example.com/paypal-digital-goods/`.
+To test the library for yourself, copy the entire folder somewhere onto your server, eg. `http://example.com/paypal-test/`.
 
 Create a sandbox seller account and request it be set as a Digital Goods account in this [x.com forums topic](https://www.x.com/thread/49892).
 
 Login to this account and get your API credentials from the [API Access](https://www.sandbox.paypal.com/us/cgi-bin/webscr?cmd=_profile-api-access) page.
 
-Copy the API Credentials into `/examples/functions.php`.
+Copy the API Credentials into `http://example.com/paypal-test/examples/functions.php`.
 
-Load `index.php` in your browser.
+Load `http://example.com/paypal-test/examples/index.php` in your browser.
 
 
 ### Quick Example
 
-The minimum code required for creating an instance of the class is to pass it your PayPal API Credentials and the return & cancel URLs.
+The minimum code required for creating an instance of the class is to pass the constructor your PayPal API Credentials and the return & cancel URLs.
 
 ```php
 require_once('paypal-digital-goods.class.php');
@@ -145,8 +144,8 @@ $credentials = array(
 );
 
 $args = array(
-	'return_url' = 'http://example.com/paypal-digital-goods/examples/return.php?return=paid',
-	'cancel_url' = 'http://example.com/paypal-digital-goods/examples/return.php?return=cancel',
+	'return_url' = 'http://example.com/paypal/return.php?return=paid',
+	'cancel_url' = 'http://example.com/paypal/return.php?return=cancel',
 );
 
 $paypal = new PayPal_Digital_Goods( $credentials, $args );
@@ -157,7 +156,7 @@ This will create a $25/month subscription in the PayPal Sandbox.
 
 ### Customising your Subscription
 
-The `$args` parameter accepted in the class constructor is an associative array of `name => value` pairs that you can use to customise your subscription.
+The `$args` parameter is an associative array of `name => value` pairs that you can use to customise the details of your subscription.
 
 #### Subscription Price
 
@@ -167,7 +166,7 @@ To change the subscription to be $49/Month with a $79 sign-up fee, the parameter
 $args['subscription'] = array(
 	'amount' = 49.00,
 	'initial_amount' = 79.00,
-	'average_amount' = 49.00 // default is 25.00 as our monthly subscription value is higher than that, we must set this
+	'average_amount' = 49.00 // PayPal default is 25.00 as our monthly subscription value is higher than that, we must set this
 );
 ```
 
@@ -202,7 +201,7 @@ $args['subscription'] = array(
 
 To set the description a new subscriber sees when confirming the subscription with PayPal, pass a description in the `'subscription'` parameter.
 
-`$args['subscription'] = array( 'description' => 'Hacker Monthly magazine online subscription.' );`
+`$args['subscription'] = array( 'description' => 'Hacker Monthly subscription.' );`
 
 #### From the Sandbox to the Live Environment
 
@@ -244,8 +243,8 @@ The class also only support creating one recurring payments profile, where as Pa
 Future versions may include 
 
 * Purchase of digital goods as well as recurring payments.
-* Method to create up to 10 different profiles in one transaction. 
-* Parsed responses from API calls with urldecoded values and keys translated into more human friendly terms
+* Method to create up to 10 different profiles in one transaction.
+* Parsed responses from API calls with keys translated into more human friendly terms.
 
 
 ## Pull Requests
@@ -256,13 +255,10 @@ To submit a patch:
 
 1. Fork the project.
 1. Make your feature addition or bug fix.
-1. Comment your functions with a brief explanation of purpose. Comment inline only to [explain *why* your code works. Let your code explain *how*](http://www.codinghorror.com/blog/2006/12/code-tells-you-how-comments-tell-you-why.html).
 1. Add examples for any new functionality.
 1. Send me a pull request. Bonus points for topic branches.
 
-Your syntax should conform to the [WordPress Coding Standards](http://codex.wordpress.org/WordPress_Coding_Standards). 
-
-Remember, the class is written to be friendly to humans, so place special emphasis on readability. It is more important than cleverness and brevity.
+The class is written to be friendly to humans, so place special emphasis on readability of your code. It is more important than cleverness and brevity. Your syntax should conform to the [WordPress Coding Standards](http://codex.wordpress.org/WordPress_Coding_Standards). Provide a brief explanation of each functions purpose in header comments, and comment inline only to [explain *why* your code works. Let your code explain *how*](http://www.codinghorror.com/blog/2006/12/code-tells-you-how-comments-tell-you-why.html).
 
 >Programs must be written for people to read, and only incidentally for machines to execute.
 >&#8212; [Structure and Interpretation of Computer Programs](http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-7.html)
