@@ -63,6 +63,8 @@ class PayPal_Digital_Goods {
 	 * - return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
 	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
 	 * - currency, string. The ISO 4217 currency code for the transaction. Default USD.
+	 * - callback, string. URL to which the callback request from PayPal is sent. It must start with HTTPS for production integration. It can start with HTTPS or HTTP for sandbox testing
+	 * - business_name, string. A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.
 	 * - subscription, array, details of the recurring payment profile to be created.
 	 * 		- description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
 	 * 		Subscription price parameters (default: $25 per month):
@@ -103,6 +105,8 @@ class PayPal_Digital_Goods {
 			'sandbox'         => true,
 			'version'         => '76.0',
 			'currency'        => 'USD',
+			'callback'        => '',
+			'business_name'   => '',
 			'subscription'    => array(
 				'description'        => 'Digital Goods Subscription',
 				// Price
@@ -127,16 +131,18 @@ class PayPal_Digital_Goods {
 		$args['subscription'] = array_merge( $defaults['subscription'], $args['subscription'] );
 		$args = array_merge( $defaults, $args );
 
-		$this->version      = $args['version'];
+		$this->version       = $args['version'];
+		$this->currency      = $args['currency'];
+		$this->callback      = $args['callback'];
+		$this->business_name = $args['business_name'];
 
-		$this->currency     = $args['currency'];
-		$this->subscription = (object)$args['subscription'];
+		$this->subscription  = (object)$args['subscription'];
 
-		$this->endpoint     = ( $args['sandbox'] ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
-		$this->checkout_url = ( $args['sandbox'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
+		$this->endpoint      = ( $args['sandbox'] ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
+		$this->checkout_url  = ( $args['sandbox'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
 
-		$this->return_url	= $args['return_url'];
-		$this->cancel_url	= $args['cancel_url'];
+		$this->return_url    = $args['return_url'];
+		$this->cancel_url    = $args['cancel_url'];
 	}
 
 	/**
@@ -173,6 +179,12 @@ class PayPal_Digital_Goods {
 							. '&BILLINGAGREEMENTDESCRIPTION=' . urlencode( $this->subscription->description )
 							. '&CURRENCYCODE=' . urlencode( $this->currency )
 							. '&MAXAMT=' . urlencode( $this->subscription->average_amount );
+
+			if( ! empty( $this->callback ) )
+				$api_request  .=  '&CALLBACK=' . urlencode( $this->callback );
+
+			if( ! empty( $this->business_name ) )
+				$api_request  .=  '&BRANDNAME=' . urlencode( $this->business_name );
 
 		} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
 
