@@ -356,6 +356,18 @@ class PayPal_Digital_Goods {
 
 
 	/**
+	 * Returns this instance of the class's token.
+	 */
+	function token(){
+		if( empty( $this->token ) ) {
+			$this->request_checkout_token();
+		}
+
+		return $this->token;
+	}
+
+
+	/**
 	 * The Javascript to invoke the digital goods checkout process.
 	 * 
 	 * No need to call this function manually, required scripts are automatically printed with @see print_buy_buttion(). 
