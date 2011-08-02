@@ -48,12 +48,12 @@ class PayPal_Digital_Goods {
 	/**
 	 * The URL on your site that the purchaser is sent to upon completing checkout.
 	 */
-	private $return_url;
+	public $return_url;
 
 	/**
 	 * The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
 	 */
-	private $cancel_url;
+	public $cancel_url;
 
 	/**
 	 * Creates a PayPal Digital Goods Object configured according to the parameters in the args associative array. 
