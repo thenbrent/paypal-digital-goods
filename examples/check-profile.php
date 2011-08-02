@@ -17,6 +17,7 @@ if( ! isset( $_GET['profile_id'] ) )
 $paypal->get_subscription_details( $_GET['profile_id'] ) ); = 
 <? print_r( $paypal->get_subscription_details( $_GET['profile_id'] ) ); ?>
 		</pre>
+		<p><a href="<?php echo get_script_uri(); ?>" target="_top">Return to Examples Overview &raquo;</a></p>
 	<div>
 </body>
 </html>
