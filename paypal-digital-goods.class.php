@@ -411,14 +411,14 @@ class PayPal_Digital_Goods {
 	function get_buy_button( $args = array() ){
 
 		$defaults = array(  'id'        => 'paypal-submit',
-							'element'   => 'anchor',
+							'type'      => 'anchor',
 							'href'      => $this->checkout_url,
 							'get_token' => true
 					);
 
 		$args = array_merge( $defaults, $args );
 
-		if( $args['element'] == 'anchor' ) {
+		if( $args['type'] == 'anchor' ) {
 			if( $args['get_token'] == true && empty( $this->token ) )
 				$this->request_checkout_token();
 
