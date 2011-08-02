@@ -323,6 +323,8 @@ class PayPal_Digital_Goods {
 		if( ! $response )
 			die($action . ' failed: ' . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')');
 
+		curl_close($ch);
+
 		// An associative array is more usable than a parameter string
 		$response        = explode( '&', $response );
 		$parsed_response = array();
@@ -340,6 +342,18 @@ class PayPal_Digital_Goods {
 			die( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
 
 		return $parsed_response;
+	}
+
+
+	/**
+	 * Returns this instance of the class's token.
+	 */
+	function token(){
+		if( empty( $this->token ) ) {
+			$this->request_checkout_token();
+		}
+
+		return $this->token;
 	}
 
 
