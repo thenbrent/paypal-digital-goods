@@ -1,6 +1,6 @@
 # Recurring Payments with PayPal Digital Goods for Express Checkout PHP Library
 
-PayPal's Digital Goods subscription service is a wonderful payment solution with disjointed documentation (and an unfortunately verbose name).
+PayPal's Digital Goods subscription service is a wonderful payment solution with disjointed documentation and an unfortunately verbose name.
 
 This class connect the dots in the documentation while also offering a human friendly library for using the Recurring Payments API.
 
