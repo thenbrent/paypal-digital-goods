@@ -450,6 +450,17 @@ class PayPal_Digital_Goods {
 
 
 	/**
+	 * Returns the Checkout URL including a token for this transaction. 
+	 */
+	function get_checkout_url() {
+		if( empty( $this->token ) )
+			$this->request_checkout_token();
+
+		// Include the token in the href if the default href is not overridden
+		return $this->checkout_url . $this->token;
+	}
+
+	/**
 	 * Get the description for this subscription
 	 */
 	function get_description(){
