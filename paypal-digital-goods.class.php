@@ -413,6 +413,7 @@ class PayPal_Digital_Goods {
 		$defaults = array(  'id'        => 'paypal-submit',
 							'type'      => 'anchor',
 							'href'      => $this->checkout_url,
+							'alt'       => 'Submit',
 							'get_token' => true
 					);
 
@@ -426,9 +427,9 @@ class PayPal_Digital_Goods {
 			if( $args['href'] == $this->checkout_url )
 				$args['href'] .= $this->token;
 
-			$button = '<a href="' . $args['href'] . '" id="' . $args['id'] . '"><img src="https://www.paypal.com/en_US/i/btn/btn_dg_pay_w_paypal.gif" border="0" /></a>';
+			$button = '<a href="' . $args['href'] . '" id="' . $args['id'] . '" alt="' . $args['alt'] . '"><img src="https://www.paypal.com/en_US/i/btn/btn_dg_pay_w_paypal.gif" border="0" /></a>';
 		} else {
-			$button = '<input type="image" id="' . $args['id'] . '" src="https://www.paypal.com/en_US/i/btn/btn_dg_pay_w_paypal.gif">';
+			$button = '<input type="image" id="' . $args['id'] . '" alt="' . $args['alt'] . '" src="https://www.paypal.com/en_US/i/btn/btn_dg_pay_w_paypal.gif">';
 		}
 
 		return $button;
