@@ -8,9 +8,9 @@ require_once('../paypal-digital-goods.class.php');
 
 // Create our PayPal Object
 $credentials = array(
-	'username'  => 'digita_1308916325_biz_api1.gmail.com',
-	'password'  => '1308916362',
-	'signature' => 'AFnwAcqRkyW0yPYgkjqTkIGqPbSfAyVFbnFAjXCRltVZFzlJyi2.HbxW'
+	'username'  => 'your_api_username',  // For quick and once off sandbox tests, use 'digita_1308916325_biz_api1.gmail.com',
+	'password'  => 'your_api_password',  // '1308916362',
+	'signature' => 'your_api_signature', // 'AFnwAcqRkyW0yPYgkjqTkIGqPbSfAyVFbnFAjXCRltVZFzlJyi2.HbxW'
 );
 
 if( $credentials['username'] == 'your_api_username' || $credentials['password'] == 'your_api_password' || $credentials['signature'] == 'your_api_signature' )
