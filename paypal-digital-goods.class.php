@@ -287,7 +287,7 @@ class PayPal_Digital_Goods {
 	 * 
 	 * @param $from, string, default PayPal. The Subscription details can be sourced from the object's properties if you know they will be already set or from PayPal (default).
 	 */
-	function get_subscription_details( $profile_id, $from = '' ){
+	function get_profile_details( $profile_id ){
 
 		return $this->call_paypal( 'GetRecurringPaymentsProfileDetails', $profile_id );
 	}
@@ -564,6 +564,24 @@ class PayPal_Digital_Goods {
 			echo $currency_symbol;
 
 		return $currency_symbol;
+	}
+
+
+	/**
+	 * Get the value of a given subscription detail, eg. amount
+	 * 
+	 * For a list of the available values of $key, see the $defaults array in the constructor.
+	 */
+	function get_subscription_detail( $key ){
+
+		if( isset( $this->$key ) )
+			$value = $this->$key;
+		elseif( isset( $this->subscription->$key ) )
+			$value = $this->subscription->$key;
+		else
+			$value = false;
+
+		return $value;
 	}
 
 
