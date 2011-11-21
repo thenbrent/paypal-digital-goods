@@ -14,6 +14,9 @@
  */
 
 require_once( 'functions.php' );
+
+$paypal = create_example_subscription();
+
 ?>
 <html>
 <head>
@@ -24,7 +27,7 @@ require_once( 'functions.php' );
 	<div class="container">
 		<h2>PayPal Recurring Payments Demo</h2>
 		<p><b>Description:</b> <?php echo $paypal->get_description(); ?></p>
-		<p><b>Subscription details:</b> <?php echo $paypal->get_subscription_string(); ?>.</p>
+		<p><b>Subscription details:</b> <?php echo $paypal->get_subscription_string(); ?></p>
 		<?php $paypal->print_buy_button( array( 'href' => 'checkout.php', 'get_token' => false ) ); ?>
 	</div>
 </body>
