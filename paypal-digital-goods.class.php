@@ -102,33 +102,47 @@ class PayPal_Digital_Goods {
 		$this->api_credentials = (object)$this->api_credentials; // Readbility
 
 		$defaults = array(
-			'sandbox'         => true,
-			'version'         => '76.0',
-			'currency'        => 'USD',
-			'callback'        => '',
-			'business_name'   => '',
-			'subscription'    => array(
-				'description'        => 'Digital Goods Subscription',
-				// Price
-				'amount'             => '25.00',
-				'initial_amount'     => '0.00',
-				'average_amount'     => '25',
-				// Temporal Details
-				'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
-				'period'             => 'Month',
-				'frequency'          => '1',
-				'total_cycles'       => '0',
-				// Trial Period
-				'trial_amount'       => '0.00',
-				'trial_period'       => 'Month',
-				'trial_frequency'    => '0',
-				'trial_total_cycles' => '0',
-				// Miscellaneous
-				'add_to_next_bill'  => true,
-			)
+			'sandbox'       => true,
+			'version'       => '76.0',
+			'currency'      => 'USD',
+			'callback'      => '',
+			'business_name' => '' 
 		);
 
-		$args['subscription'] = array_merge( $defaults['subscription'], $args['subscription'] );
+		$purchase_defaults = array(
+			'item_name'   => 'Digital Good',
+			'description' => 'Digital Good Purchase',
+			// Price
+			'amount'      => '5.00',
+			'tax'         => '0.00',
+		);
+
+		$subscription_defaults = array(
+			'description'        => 'Digital Goods Subscription',
+			// Price
+			'amount'             => '25.00',
+			'initial_amount'     => '0.00',
+			'average_amount'     => '25',
+			// Temporal Details
+			'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
+			'period'             => 'Month',
+			'frequency'          => '1',
+			'total_cycles'       => '0',
+			// Trial Period
+			'trial_amount'       => '0.00',
+			'trial_period'       => 'Month',
+			'trial_frequency'    => '0',
+			'trial_total_cycles' => '0',
+			// Miscellaneous
+			'add_to_next_bill'   => true,
+		);
+
+		if( isset( $args['purchase'] ) ) {
+			$args['purchase'] = array_merge( $purchase_defaults, $args['purchase'] );
+		} else {
+			$args['subscription'] = array_merge( $subscription_defaults, $args['subscription'] );
+		}
+
 		$args = array_merge( $defaults, $args );
 
 		$this->version       = $args['version'];
@@ -136,7 +150,14 @@ class PayPal_Digital_Goods {
 		$this->callback      = $args['callback'];
 		$this->business_name = $args['business_name'];
 
-		$this->subscription  = (object)$args['subscription'];
+		if( isset( $args['purchase'] ) ) {
+			$this->purchase = (object)$args['purchase'];
+		} else {
+			$this->subscription = (object)$args['subscription'];
+
+			// Add subscription details to description
+			$this->subscription->description .= ( preg_match( '/\.\s*$/', $this->subscription->description ) ) ? $this->get_subscription_string() : '. ' . $this->get_subscription_string();
+		}
 
 		$this->endpoint      = ( $args['sandbox'] ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
 		$this->checkout_url  = ( $args['sandbox'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
@@ -172,13 +193,9 @@ class PayPal_Digital_Goods {
 		// Parameters to Request Recurring Payment Token
 		if( 'SetExpressCheckout' == $action ) {
 
-			$api_request  .=  '&METHOD=SetExpressCheckout'
-							. '&RETURNURL=' . urlencode( $this->return_url )
-							. '&CANCELURL=' . urlencode( $this->cancel_url )
-							. '&BILLINGTYPE=RecurringPayments'
-							. '&BILLINGAGREEMENTDESCRIPTION=' . urlencode( $this->subscription->description )
-							. '&CURRENCYCODE=' . urlencode( $this->currency )
-							. '&MAXAMT=' . urlencode( $this->subscription->average_amount );
+			$api_request .= '&METHOD=SetExpressCheckout'
+						 .  '&RETURNURL=' . urlencode( $this->return_url )
+						 .  '&CANCELURL=' . urlencode( $this->cancel_url );
 
 			if( ! empty( $this->callback ) )
 				$api_request  .=  '&CALLBACK=' . urlencode( $this->callback );
@@ -186,21 +203,73 @@ class PayPal_Digital_Goods {
 			if( ! empty( $this->business_name ) )
 				$api_request  .=  '&BRANDNAME=' . urlencode( $this->business_name );
 
+			if( ! empty( $this->subscription ) ) { // It's a subscription
+
+				 $api_request .= '&BILLINGTYPE=RecurringPayments'
+							  .  '&BILLINGAGREEMENTDESCRIPTION=' . urlencode( $this->subscription->description )
+							  .  '&CURRENCYCODE=' . urlencode( $this->currency )
+							  .  '&MAXAMT=' . urlencode( $this->subscription->average_amount );
+
+			} else { // It's a one off purchase
+
+				$api_request  .= '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency ) // A 3-character currency code (default is USD).
+							  .  '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
+
+							  // Payment details
+							  .  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
+							  .  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
+							  .  '&PAYMENTREQUEST_0_DESC=' . $this->purchase->description // (Optional) Description of items the buyer is purchasing. 
+
+							  // Item details
+							  .  '&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital' // Indicates whether an item is digital or physical. For digital goods, this field is required and must be set to Digital.
+							  .  '&L_PAYMENTREQUEST_0_NAME0=' . $this->purchase->item_name // Item name. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
+							  .  '&L_PAYMENTREQUEST_0_DESC0=' . $this->purchase->description // (Optional) Item description. Character length and limitations: 127 single-byte characters
+							  .  '&L_PAYMENTREQUEST_0_AMT0=' . $this->purchase->amount // Cost of item. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
+							  .  '&L_PAYMENTREQUEST_0_QTY0=1'; // (Required) Item quantity. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed. For digital goods (L_PAYMENTREQUEST_n_ITEMCATEGORYm=Digital), this field is required.
+
+				// Maybe add tax
+				if( ! empty( $this->purchase->tax_amount ) ) {
+					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order. 
+								  .  '&L_PAYMENTREQUEST_0_TAXAMT0=' . $this->purchase->tax_amount; // (Optional) Item sales tax. Character length and limitations: Value is a positive number which cannot exceed $10,000 USD in any currency. It includes no currency symbol. It must have 2 decimal places, the decimal separator must be a period (.), and the optional thousands separator must be a comma (,).
+				}
+
+				if( ! empty( $this->purchase->invoice_number ) )
+					$api_request  .= '&L_PAYMENTREQUEST_0_NUMBER0=' . $this->purchase->item_number; // (Optional) Item number. Character length and limitations: 127 single-byte characters
+
+				if( ! empty( $this->purchase->invoice_number ) )
+					$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
+
+			}
+
+		} elseif ( 'DoExpressCheckoutPayment' == $action ) {
+/*
+			$api_request    .= '&METHOD=DoExpressCheckoutPayment' 
+							.  '&TOKEN=' . $this->token
+							// Payment details
+							.  '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency )
+							.  '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
+							.  '&PAYMENTREQUEST_0_NOTIFYURL=' // (Optional) URL for receiving Instant Payment Notification (IPN) about this transaction. If you do not specify this value in the request, the notification URL from your Merchant Profile is used, if one exists. The notify URL applies only to DoExpressCheckoutPayment. This value is ignored when set in SetExpressCheckout or GetExpressCheckoutDetails.
+
+*/
 		} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
 
 			$api_request  .=  '&METHOD=CreateRecurringPaymentsProfile' 
 							. '&TOKEN=' . $this->token
+
 							// Details
 							. '&DESC=' . urlencode( $this->subscription->description )
 							. '&CURRENCYCODE=' . urlencode( $this->currency )
 							. '&PROFILESTARTDATE=' . urlencode( $this->subscription->start_date )
+
 							// Price
 							. '&AMT=' . urlencode( $this->subscription->amount )
 							. '&INITAMT=' . urlencode( $this->subscription->initial_amount )
+
 							// Period
 							. '&BILLINGPERIOD=' . urlencode( $this->subscription->period )
 							. '&BILLINGFREQUENCY=' . urlencode( $this->subscription->frequency )
 							. '&TOTALBILLINGCYCLES=' . urlencode( $this->subscription->total_cycles )
+
 							// Specify Digital Good Payment
 							. "&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital" // Best rates for Digital Goods sale
 							. "&L_PAYMENTREQUEST_0_NAME0=" . urlencode( $this->subscription->description )
@@ -461,7 +530,10 @@ class PayPal_Digital_Goods {
 	 * Get the description for this subscription
 	 */
 	function get_description(){
-		return $this->subscription->description;
+		if( ! empty( $this->subscription ) )
+			return $this->subscription->description;
+		else
+			return $this->purchase->description;
 	}
 
 
@@ -469,10 +541,11 @@ class PayPal_Digital_Goods {
 	 * Returns a string representing the details of the subscription. 
 	 * 
 	 * For example "$10 sign-up fee then $20 per Month for 3 Months". 
-	 * 
-	 * @param $echo bool, Optionally print the string before returning it.
 	 */
-	function get_subscription_string( $echo = false ){
+	function get_subscription_string(){
+
+		if( empty( $this->subscription ) )
+			return 'No subscription set.';
 
 		$subscription_details = '';
 
@@ -502,6 +575,15 @@ class PayPal_Digital_Goods {
 		return $subscription_details;
 	}
 
+	/**
+	 * Returns a string representing the price for the purchase, including currency code. For example "$10". 
+	 */
+	function get_purchase_price() {
+		if( ! empty( $this->subscription ) )
+			return 'No purchase price, this is a subscription.';
+		else
+			return $this->get_currency_symbol() . $this->purchase->amount;
+	}
 
 	/**
 	 * Get the symbol associated with a currency, optionally specified with '$currency_code' parameter. 
