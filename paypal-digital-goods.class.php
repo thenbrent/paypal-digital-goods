@@ -334,22 +334,15 @@ class PayPal_Digital_Goods {
 
 		// If no response was received from PayPal there is no point parsing the response
 		if( ! $response )
-			die($action . ' failed: ' . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')');
+			die( $action . ' failed: ' . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')' );
 
-		curl_close($ch);
+		curl_close( $ch );
 
 		// An associative array is more usable than a parameter string
-		$response        = explode( '&', $response );
-		$parsed_response = array();
-		foreach ( $response as $value ) {
-			$temp = explode( '=', $value );
-			if( sizeof( $temp ) > 1 ) {
-				$parsed_response[$temp[0]] = urldecode( $temp[1] );
-			}
-		}
+		parse_str( $response, $parsed_response );
 
 		if( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) )
-			die("Invalid HTTP Response for POST request($api_parameters) to " . $this->endpoint);
+			die( "Invalid HTTP Response for POST request($api_parameters) to " . $this->endpoint );
 
 		if( $parsed_response['ACK'] == 'Failure' )
 			die( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
@@ -407,6 +400,7 @@ class PayPal_Digital_Goods {
 	 * 			'element' string. The type of element to use as the button. Either anchor or submit. Default 'anchor'.
 	 * 			'href' string. The URL for 'anchor' tag. Ignored when 'element' is 'submit'. Default $this->checkout_url. 
 	 * 			'get_token' boolean. Whether to include a token with the href. Overridden by 'element' when it is 'submit'.
+	 * 			'type' string. Type of element to output, either anchor or image/submit. Defaults to 'anchor'. 
 	 */
 	function get_buy_button( $args = array() ){
 
