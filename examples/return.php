@@ -1,5 +1,6 @@
 <?php
 require_once( 'functions.php' );
+
 ?>
 <html>
 <head>
@@ -19,14 +20,30 @@ require_once( 'functions.php' );
 	<?php // Returning from PayPal & Payment Authorised ?>
 	<?php elseif( isset( $_GET['paypal'] ) && $_GET['paypal'] == 'paid' ) :
 
-		// Start the Subscription
-		$response = $paypal->start_subscription(); ?>
+		// Process the payment or start the Subscription
+		if( isset( $_GET['PayerID'] ) ) {
+			$paypal = create_example_purchase();
+			$response = $paypal->process_payment();
+			error_log( 'Processing payment' );
+		} else { 
+			$paypal = create_example_subscription();
+			$response = $paypal->start_subscription();
+			error_log( 'Processing subscription' );
+		}
+		?>
 
-		<p>Payment Complete!</p>
-		<p>Your Payment Profile ID is <?php echo $response['PROFILEID']; ?></p>
-		<p>You can use this Profile ID to see the details of your subscription like so:</p>
-		<pre><code>get_subscription_details('<?php echo $response['PROFILEID']; ?>');</code></pre>
-		<p><a href="<?php echo get_script_uri( 'check-profile.php?profile_id=' . urlencode($response['PROFILEID']) ) ?>" target="_top">Check Profile &raquo;</a></p>
+		<h3>Payment Complete!</h3>
+		<?php if( isset( $_GET['PayerID'] ) ) { ?>
+			<p>Your Transaction ID is <?php echo $response['PAYMENTINFO_0_TRANSACTIONID']; ?></p>
+			<p>You can use this Transaction ID to see the details of your subscription like so:</p>
+			<pre><code>get_transaction_details( $response['PAYMENTINFO_0_TRANSACTIONID'] );</code></pre>
+			<p><a href="<?php echo get_script_uri( 'check-profile.php?transaction_id=' . urlencode($response['PAYMENTINFO_0_TRANSACTIONID']) ) ?>" target="_top">View Transaction Details &raquo;</a></p>
+		<?php } else { ?>
+			<p>Your Payment Profile ID is <?php echo $response['PROFILEID']; ?></p>
+			<p>You can use this Profile ID to see the details of your subscription like so:</p>
+			<pre><code>get_profile_details('<?php echo $response['PROFILEID']; ?>');</code></pre>
+			<p><a href="<?php echo get_script_uri( 'check-profile.php?profile_id=' . urlencode($response['PROFILEID']) ) ?>" target="_top">Check Profile &raquo;</a></p>
+		<?php } ?>
 
 	<?php endif; ?>
 	</div>
