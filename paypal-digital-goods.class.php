@@ -2,9 +2,10 @@
 /**
  * An interface for the PayPal Digital Goods with Express Checkout API with an emphasis on being friendly to humans.
  * 
- * License: GPLv2 see license.txt
- * URL: https://github.com/thenbrent/paypal-digital-goods
- * Copyright (C) 2011 Leonard's Ego Pty. Ltd.
+ * @package    PayPal
+ * 
+ * @license    GPLv3 see license.txt
+ * @copyright  2011 Leonard's Ego Pty. Ltd.
  */
 class PayPal_Digital_Goods {
 
@@ -182,7 +183,7 @@ class PayPal_Digital_Goods {
 	/**
 	 * Map this object's transaction details to the PayPal NVP format for posting to PayPal.
 	 */
-	function get_payment_details_url( $action, $profile_id = '' ){
+	function get_payment_details_url( $action, $profile_or_transaction_id = '' ){
 
 		if( empty( $this->token ) && isset( $_GET['token'] ) )
 			$this->token = $_GET['token'];
@@ -242,15 +243,39 @@ class PayPal_Digital_Goods {
 			}
 
 		} elseif ( 'DoExpressCheckoutPayment' == $action ) {
-/*
+
 			$api_request    .= '&METHOD=DoExpressCheckoutPayment' 
 							.  '&TOKEN=' . $this->token
-							// Payment details
-							.  '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency )
-							.  '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
-							.  '&PAYMENTREQUEST_0_NOTIFYURL=' // (Optional) URL for receiving Instant Payment Notification (IPN) about this transaction. If you do not specify this value in the request, the notification URL from your Merchant Profile is used, if one exists. The notify URL applies only to DoExpressCheckoutPayment. This value is ignored when set in SetExpressCheckout or GetExpressCheckoutDetails.
+							.  '&PAYERID=' . $_GET['PayerID']
+//							.  '&RETURNFMFDETAILS=1'
 
-*/
+							// Payment details
+							. '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency ) // A 3-character currency code (default is USD).
+							. '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
+
+							// Payment details
+							.  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
+							.  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
+							.  '&PAYMENTREQUEST_0_DESC=' . $this->purchase->description // (Optional) Description of items the buyer is purchasing. 
+
+							// Item details
+							.  '&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital' // Indicates whether an item is digital or physical. For digital goods, this field is required and must be set to Digital.
+							.  '&L_PAYMENTREQUEST_0_NAME0=' . $this->purchase->item_name // Item name. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
+							.  '&L_PAYMENTREQUEST_0_DESC0=' . $this->purchase->description // (Optional) Item description. Character length and limitations: 127 single-byte characters
+							.  '&L_PAYMENTREQUEST_0_AMT0=' . $this->purchase->amount // Cost of item. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
+							.  '&L_PAYMENTREQUEST_0_QTY0=1'; // (Required) Item quantity. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed. For digital goods (L_PAYMENTREQUEST_n_ITEMCATEGORYm=Digital), this field is required.
+
+			// Maybe add tax
+			if( ! empty( $this->purchase->tax_amount ) )
+				$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order. 
+							  .  '&L_PAYMENTREQUEST_0_TAXAMT0=' . $this->purchase->tax_amount; // (Optional) Item sales tax. Character length and limitations: Value is a positive number which cannot exceed $10,000 USD in any currency. It includes no currency symbol. It must have 2 decimal places, the decimal separator must be a period (.), and the optional thousands separator must be a comma (,).
+
+			if( ! empty( $this->purchase->invoice_number ) )
+				$api_request  .= '&L_PAYMENTREQUEST_0_NUMBER0=' . $this->purchase->item_number; // (Optional) Item number. Character length and limitations: 127 single-byte characters
+
+			if( ! empty( $this->purchase->invoice_number ) )
+				$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
+
 		} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
 
 			$api_request  .=  '&METHOD=CreateRecurringPaymentsProfile' 
@@ -292,10 +317,15 @@ class PayPal_Digital_Goods {
 			$api_request .= '&METHOD=GetExpressCheckoutDetails'
 						  . '&TOKEN=' . $this->token;
 
+		} elseif ( 'GetTransactionDetails' == $action ) {
+
+			$api_request .= '&METHOD=GetTransactionDetails'
+						  . '&TRANSACTIONID=' . urlencode( $profile_or_transaction_id );
+
 		} elseif ( 'GetRecurringPaymentsProfileDetails' == $action ) {
 
 			$api_request .= '&METHOD=GetRecurringPaymentsProfileDetails'
-						  . '&ProfileID=' . urlencode( $profile_id );
+						  . '&ProfileID=' . urlencode( $profile_or_transaction_id );
 
 		}
 
@@ -344,7 +374,7 @@ class PayPal_Digital_Goods {
 	 * 	[ACK] => Success
 	 * 	[VERSION] => URL Encoded API Version, eg 
 	 * 	[BUILD] => 1907759
-	 * 
+	 * )
 	 */
 	function start_subscription(){
 		return $this->call_paypal( 'CreateRecurringPaymentsProfile' );
@@ -352,13 +382,146 @@ class PayPal_Digital_Goods {
 
 
 	/**
+	 * Makes a payment by calling the PayPal DoExpressCheckoutPayment API operation.
+	 * 
+	 * After an express checkout transaction has been created in request_checkout_token, this function can
+	 * be called to complete the transaction.
+	 * 
+	 * This function returned the response from PayPal, which includes a profile ID (PROFILEID). You should
+	 * save this profile ID to aid with changing and 
+	 * 
+	 * @return array(
+	 * 	[TOKEN] => EC-XXXX
+	 * 	[SUCCESSPAGEREDIRECTREQUESTED] => false
+	 * 	[TIMESTAMP] => YYYY-MM-DDTHH:MM:SSZ
+	 * 	[CORRELATIONID] => XXXX
+	 * 	[ACK] => Success
+	 * 	[VERSION] => 76.0
+	 * 	[BUILD] => 2271164
+	 * 	[INSURANCEOPTIONSELECTED] => false
+	 * 	[SHIPPINGOPTIONISDEFAULT] => false
+	 * 	[PAYMENTINFO_0_TRANSACTIONID] => XXXX
+	 * 	[PAYMENTINFO_0_TRANSACTIONTYPE] => cart
+	 * 	[PAYMENTINFO_0_PAYMENTTYPE] => instant
+	 * 	[PAYMENTINFO_0_ORDERTIME] => YYYY-MM-DDTHH:MM:SSZ
+	 * 	[PAYMENTINFO_0_AMT] => XX.00
+	 * 	[PAYMENTINFO_0_FEEAMT] => 0.XX
+	 * 	[PAYMENTINFO_0_TAXAMT] => 0.00
+	 * 	[PAYMENTINFO_0_CURRENCYCODE] => USD
+	 * 	[PAYMENTINFO_0_PAYMENTSTATUS] => Completed
+	 * 	[PAYMENTINFO_0_PENDINGREASON] => None
+	 * 	[PAYMENTINFO_0_REASONCODE] => None
+	 * 	[PAYMENTINFO_0_PROTECTIONELIGIBILITY] => Ineligible
+	 * 	[PAYMENTINFO_0_PROTECTIONELIGIBILITYTYPE] => None
+	 * 	[PAYMENTINFO_0_SECUREMERCHANTACCOUNTID] => XXXX
+	 * 	[PAYMENTINFO_0_ERRORCODE] => 0
+	 * 	[PAYMENTINFO_0_ACK] => Success
+	 * )
+	 */
+	function process_payment(){
+		return $this->call_paypal( 'DoExpressCheckoutPayment' );
+	}
+
+
+	/**
 	 * Returns information about a subscription by calling the PayPal GetRecurringPaymentsProfileDetails API method.
 	 * 
-	 * @param $from, string, default PayPal. The Subscription details can be sourced from the object's properties if you know they will be already set or from PayPal (default).
+	 * @param $profile_id, string. The profile ID of the subscription for which the details should be looked up.
+	 * @return array (
+	 * 	[PROFILEID] => I-M0WXE0SLRVRY
+	 * 	[STATUS] => Active
+	 * 	[AUTOBILLOUTAMT] => AddToNextBilling
+	 * 	[DESC] => Digital Goods Subscription. $10.00 sign-up fee then $2.00 per week for 4 weeks
+	 * 	[MAXFAILEDPAYMENTS] => 0
+	 * 	[SUBSCRIBERNAME] => Test User
+	 * 	[PROFILESTARTDATE] => 2011-11-23T08:00:00Z
+	 * 	[NEXTBILLINGDATE] => 2011-11-23T10:00:00Z
+	 * 	[NUMCYCLESCOMPLETED] => 0
+	 * 	[NUMCYCLESREMAINING] => 4
+	 * 	[OUTSTANDINGBALANCE] => 0.00
+	 * 	[FAILEDPAYMENTCOUNT] => 0
+	 * 	[LASTPAYMENTDATE] => 2011-11-22T06:54:22Z
+	 * 	[LASTPAYMENTAMT] => 10.00
+	 * 	[TRIALAMTPAID] => 0.00
+	 * 	[REGULARAMTPAID] => 0.00
+	 * 	[AGGREGATEAMT] => 0.00
+	 * 	[AGGREGATEOPTIONALAMT] => 10.00
+	 * 	[FINALPAYMENTDUEDATE] => 2011-12-14T10:00:00Z
+	 * 	[TIMESTAMP] => 2011-11-22T06:54:29Z
+	 * 	[CORRELATIONID] => c0e3666366c96
+	 * 	[ACK] => Success
+	 * 	[VERSION] => 76.0
+	 * 	[BUILD] => 2230381
+	 * 	[BILLINGPERIOD] => Week
+	 * 	[BILLINGFREQUENCY] => 1
+	 * 	[TOTALBILLINGCYCLES] => 4
+	 * 	[CURRENCYCODE] => USD
+	 * 	[AMT] => 2.00
+	 * 	[SHIPPINGAMT] => 0.00
+	 * 	[TAXAMT] => 0.00
+	 * 	[REGULARBILLINGPERIOD] => Week
+	 * 	[REGULARBILLINGFREQUENCY] => 1
+	 * 	[REGULARTOTALBILLINGCYCLES] => 4
+	 * 	[REGULARCURRENCYCODE] => USD
+	 * 	[REGULARAMT] => 2.00
+	 * 	[REGULARSHIPPINGAMT] => 0.00
+	 * 	[REGULARTAXAMT] => 0.00
+	 * )
 	 */
 	function get_profile_details( $profile_id ){
 
 		return $this->call_paypal( 'GetRecurringPaymentsProfileDetails', $profile_id );
+	}
+
+
+	/**
+	 * Returns information about a purchase transaction by calling the PayPal GetTransactionDetails API method.
+	 * 
+	 * @param $profile_id, string. The profile ID of the subscription for which the details should be looked up.
+	 * @return array (
+	 * 	[RECEIVEREMAIL] => recipient@example.com
+	 * 	[RECEIVERID] => XXXX
+	 * 	[EMAIL] => payer@example.com
+	 * 	[PAYERID] => XXXX
+	 * 	[PAYERSTATUS] => verified
+	 * 	[COUNTRYCODE] => US
+	 * 	[ADDRESSOWNER] => PayPal
+	 * 	[ADDRESSSTATUS] => None
+	 * 	[SALESTAX] => 0.00
+	 * 	[SUBJECT] => Example Digital Good Purchase
+	 * 	[TIMESTAMP] => YYYY-MM-DDTHH:MM:SSZ
+	 * 	[CORRELATIONID] => XXXX
+	 * 	[ACK] => Success
+	 * 	[VERSION] => 76.0
+	 * 	[BUILD] => 2230381
+	 * 	[FIRSTNAME] => Test
+	 * 	[LASTNAME] => User
+	 * 	[TRANSACTIONID] => XXXX
+	 * 	[TRANSACTIONTYPE] => cart
+	 * 	[PAYMENTTYPE] => instant
+	 * 	[ORDERTIME] => YYYY-MM-DDTHH:MM:SSZ
+	 * 	[AMT] => XX.00
+	 * 	[FEEAMT] => 0.XX
+	 * 	[TAXAMT] => 0.00
+	 * 	[SHIPPINGAMT] => 0.00
+	 * 	[HANDLINGAMT] => 0.00
+	 * 	[CURRENCYCODE] => USD
+	 * 	[PAYMENTSTATUS] => Completed
+	 * 	[PENDINGREASON] => None
+	 * 	[REASONCODE] => None
+	 * 	[PROTECTIONELIGIBILITY] => Ineligible
+	 * 	[PROTECTIONELIGIBILITYTYPE] => None
+	 * 	[L_NAME0] => Digital Good Example
+	 * 	[L_QTY0] => 1
+	 * 	[L_SHIPPINGAMT0] => 0.00
+	 * 	[L_HANDLINGAMT0] => 0.00
+	 * 	[L_CURRENCYCODE0] => USD
+	 * 	[L_AMT0] => XX.00
+	 * )
+	 */
+	function get_transaction_details( $transaction_id ){
+
+		return $this->call_paypal( 'GetTransactionDetails', $transaction_id );
 	}
 
 
