@@ -4,7 +4,9 @@
  */
 global $paypal;
 
-require_once('../paypal-digital-goods.class.php');
+require_once( '../paypal-digital-goods.class.php' );
+require_once( '../paypal-subscription.class.php' );
+require_once( '../paypal-purchase.class.php' );
 
 
 /**
@@ -46,7 +48,8 @@ function create_example_purchase() {
 		)
 	);
 
-	return new PayPal_Digital_Goods( get_credentials(), $args );
+	//return new PayPal_Digital_Goods( get_credentials(), $args );
+	return new PayPal_Purchase( $args['purchase'] );
 }
 
 

@@ -7,7 +7,7 @@
  * @license    GPLv3 see license.txt
  * @copyright  2011 Leonard's Ego Pty. Ltd.
  */
-class PayPal_Digital_Goods {
+abstract class PayPal_Digital_Goods {
 
 	/**
 	 * A array of name value pairs representing the seller's API Username, Password & Signature. 
@@ -15,11 +15,6 @@ class PayPal_Digital_Goods {
 	 * These are passed to the class via the parameters in the constructor. 
 	 */
 	private $api_credentials;
-
-	/**
-	 * Details of this particular recurring payment profile, including price, period & frequency.
-	 */
-	private $subscription;
 
 	/**
 	 * Stores the token once it has been acquired from PayPal
@@ -66,22 +61,6 @@ class PayPal_Digital_Goods {
 	 * - currency, string. The ISO 4217 currency code for the transaction. Default USD.
 	 * - callback, string. URL to which the callback request from PayPal is sent. It must start with HTTPS for production integration. It can start with HTTPS or HTTP for sandbox testing
 	 * - business_name, string. A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.
-	 * - subscription, array, details of the recurring payment profile to be created.
-	 * 		- description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
-	 * 		Subscription price parameters (default: $25 per month):
-	 * 		- amount, double, default 25.00. The price per period for the subscription.
-	 * 		- initial_amount, double, default 0. An optional sign up fee.
-	 * 		- average_amount, double, default 25.00. The average transaction amount, PayPal default is $25, only set higher if your monthly subscription value is higher
-	 * 		Subscription temporal parameters (default: bill once per month forever):
-	 * 		- start_date, date, default 24 hours in the future. The start date for the profile, defaults to one day in the future. Must take the form YYYY-MM-DDTHH:MM:SS and can not be in the past.
-	 * 		- period, Day|Week|Month|Semimonth, default Month. The unit of interval between billing.
-	 * 		- frequency, integer, default 1. How regularly to charge the amount. When period is Month, a frequency value of 1 would charge every month while a frequency value of 12 charges once every year.
-	 * 		- total_cycles, integer, default perpetuity. The total number of occasions the subscriber should be charged. When period is month and frequency is 1, 12 would continue the subscription for one year. The default value 0 will continue the payment for perpetuity.
-	 * 		Subscription trail period parameters (default: no trial period):
-	 * 		- trial_amount, double, default 0. The price per trial period.
-	 * 		- trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
-	 * 		- trial_frequency, integer, default 0. How regularly to charge the amount.
-	 * 		- trial_total_cycles, integer, default perpetuity. 
 	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 76.0
 	 * 
 	 * @param api_credentials, required, a name => value array containing your API username, password and signature.
@@ -110,55 +89,12 @@ class PayPal_Digital_Goods {
 			'business_name' => '' 
 		);
 
-		$purchase_defaults = array(
-			'item_name'   => 'Digital Good',
-			'description' => 'Digital Good Purchase',
-			// Price
-			'amount'      => '5.00',
-			'tax'         => '0.00',
-		);
-
-		$subscription_defaults = array(
-			'description'        => 'Digital Goods Subscription',
-			// Price
-			'amount'             => '25.00',
-			'initial_amount'     => '0.00',
-			'average_amount'     => '25',
-			// Temporal Details
-			'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
-			'period'             => 'Month',
-			'frequency'          => '1',
-			'total_cycles'       => '0',
-			// Trial Period
-			'trial_amount'       => '0.00',
-			'trial_period'       => 'Month',
-			'trial_frequency'    => '0',
-			'trial_total_cycles' => '0',
-			// Miscellaneous
-			'add_to_next_bill'   => true,
-		);
-
-		if( isset( $args['purchase'] ) ) {
-			$args['purchase'] = array_merge( $purchase_defaults, $args['purchase'] );
-		} else {
-			$args['subscription'] = array_merge( $subscription_defaults, $args['subscription'] );
-		}
-
 		$args = array_merge( $defaults, $args );
 
 		$this->version       = $args['version'];
 		$this->currency      = $args['currency'];
 		$this->callback      = $args['callback'];
 		$this->business_name = $args['business_name'];
-
-		if( isset( $args['purchase'] ) ) {
-			$this->purchase = (object)$args['purchase'];
-		} else {
-			$this->subscription = (object)$args['subscription'];
-
-			// Add subscription details to description
-			$this->subscription->description .= ( preg_match( '/\.\s*$/', $this->subscription->description ) ) ? $this->get_subscription_string() : '. ' . $this->get_subscription_string();
-		}
 
 		$this->endpoint      = ( $args['sandbox'] ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
 		$this->checkout_url  = ( $args['sandbox'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
@@ -182,6 +118,10 @@ class PayPal_Digital_Goods {
 
 	/**
 	 * Map this object's transaction details to the PayPal NVP format for posting to PayPal.
+	 * 
+	 * @param $action, string. The PayPal NVP API action to create the URL for. One of SetExpressCheckout, CreateRecurringPaymentsProfile or GetRecurringPaymentsProfileDetails.
+	 * @param $profile_id, (optional) string. A PayPal Recurrent Payment Profile ID, required for GetRecurringPaymentsProfileDetails operation. 
+	 * @return string A URL which can be called with the @see call_paypal() method to perform the appropriate API operation.
 	 */
 	function get_payment_details_url( $action, $profile_or_transaction_id = '' ){
 
@@ -204,128 +144,10 @@ class PayPal_Digital_Goods {
 			if( ! empty( $this->business_name ) )
 				$api_request  .=  '&BRANDNAME=' . urlencode( $this->business_name );
 
-			if( ! empty( $this->subscription ) ) { // It's a subscription
-
-				 $api_request .= '&BILLINGTYPE=RecurringPayments'
-							  .  '&BILLINGAGREEMENTDESCRIPTION=' . urlencode( $this->subscription->description )
-							  .  '&CURRENCYCODE=' . urlencode( $this->currency )
-							  .  '&MAXAMT=' . urlencode( $this->subscription->average_amount );
-
-			} else { // It's a one off purchase
-
-				$api_request  .= '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency ) // A 3-character currency code (default is USD).
-							  .  '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
-
-							  // Payment details
-							  .  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
-							  .  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
-							  .  '&PAYMENTREQUEST_0_DESC=' . $this->purchase->description // (Optional) Description of items the buyer is purchasing. 
-
-							  // Item details
-							  .  '&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital' // Indicates whether an item is digital or physical. For digital goods, this field is required and must be set to Digital.
-							  .  '&L_PAYMENTREQUEST_0_NAME0=' . $this->purchase->item_name // Item name. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-							  .  '&L_PAYMENTREQUEST_0_DESC0=' . $this->purchase->description // (Optional) Item description. Character length and limitations: 127 single-byte characters
-							  .  '&L_PAYMENTREQUEST_0_AMT0=' . $this->purchase->amount // Cost of item. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-							  .  '&L_PAYMENTREQUEST_0_QTY0=1'; // (Required) Item quantity. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed. For digital goods (L_PAYMENTREQUEST_n_ITEMCATEGORYm=Digital), this field is required.
-
-				// Maybe add tax
-				if( ! empty( $this->purchase->tax_amount ) ) {
-					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order. 
-								  .  '&L_PAYMENTREQUEST_0_TAXAMT0=' . $this->purchase->tax_amount; // (Optional) Item sales tax. Character length and limitations: Value is a positive number which cannot exceed $10,000 USD in any currency. It includes no currency symbol. It must have 2 decimal places, the decimal separator must be a period (.), and the optional thousands separator must be a comma (,).
-				}
-
-				if( ! empty( $this->purchase->invoice_number ) )
-					$api_request  .= '&L_PAYMENTREQUEST_0_NUMBER0=' . $this->purchase->item_number; // (Optional) Item number. Character length and limitations: 127 single-byte characters
-
-				if( ! empty( $this->purchase->invoice_number ) )
-					$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
-
-			}
-
-		} elseif ( 'DoExpressCheckoutPayment' == $action ) {
-
-			$api_request    .= '&METHOD=DoExpressCheckoutPayment' 
-							.  '&TOKEN=' . $this->token
-							.  '&PAYERID=' . $_GET['PayerID']
-//							.  '&RETURNFMFDETAILS=1'
-
-							// Payment details
-							. '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency ) // A 3-character currency code (default is USD).
-							. '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
-
-							// Payment details
-							.  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
-							.  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
-							.  '&PAYMENTREQUEST_0_DESC=' . $this->purchase->description // (Optional) Description of items the buyer is purchasing. 
-
-							// Item details
-							.  '&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital' // Indicates whether an item is digital or physical. For digital goods, this field is required and must be set to Digital.
-							.  '&L_PAYMENTREQUEST_0_NAME0=' . $this->purchase->item_name // Item name. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-							.  '&L_PAYMENTREQUEST_0_DESC0=' . $this->purchase->description // (Optional) Item description. Character length and limitations: 127 single-byte characters
-							.  '&L_PAYMENTREQUEST_0_AMT0=' . $this->purchase->amount // Cost of item. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-							.  '&L_PAYMENTREQUEST_0_QTY0=1'; // (Required) Item quantity. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed. For digital goods (L_PAYMENTREQUEST_n_ITEMCATEGORYm=Digital), this field is required.
-
-			// Maybe add tax
-			if( ! empty( $this->purchase->tax_amount ) )
-				$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order. 
-							  .  '&L_PAYMENTREQUEST_0_TAXAMT0=' . $this->purchase->tax_amount; // (Optional) Item sales tax. Character length and limitations: Value is a positive number which cannot exceed $10,000 USD in any currency. It includes no currency symbol. It must have 2 decimal places, the decimal separator must be a period (.), and the optional thousands separator must be a comma (,).
-
-			if( ! empty( $this->purchase->invoice_number ) )
-				$api_request  .= '&L_PAYMENTREQUEST_0_NUMBER0=' . $this->purchase->item_number; // (Optional) Item number. Character length and limitations: 127 single-byte characters
-
-			if( ! empty( $this->purchase->invoice_number ) )
-				$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
-
-		} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
-
-			$api_request  .=  '&METHOD=CreateRecurringPaymentsProfile' 
-							. '&TOKEN=' . $this->token
-
-							// Details
-							. '&DESC=' . urlencode( $this->subscription->description )
-							. '&CURRENCYCODE=' . urlencode( $this->currency )
-							. '&PROFILESTARTDATE=' . urlencode( $this->subscription->start_date )
-
-							// Price
-							. '&AMT=' . urlencode( $this->subscription->amount )
-							. '&INITAMT=' . urlencode( $this->subscription->initial_amount )
-
-							// Period
-							. '&BILLINGPERIOD=' . urlencode( $this->subscription->period )
-							. '&BILLINGFREQUENCY=' . urlencode( $this->subscription->frequency )
-							. '&TOTALBILLINGCYCLES=' . urlencode( $this->subscription->total_cycles )
-
-							// Specify Digital Good Payment
-							. "&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital" // Best rates for Digital Goods sale
-							. "&L_PAYMENTREQUEST_0_NAME0=" . urlencode( $this->subscription->description )
-							. "&L_PAYMENTREQUEST_0_AMT0=" . urlencode( $this->subscription->amount )
-							. "&L_PAYMENTREQUEST_0_QTY0=1";
-
-			// Maybe add a trial period
-			if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
-				$api_request  .=  '&TRIALAMT=' . urlencode( $this->subscription->trial_amount )
-								. '&TRIALBILLINGPERIOD=' . urlencode( $this->subscription->trial_period )
-								. '&TRIALBILLINGFREQUENCY=' . urlencode( $this->subscription->trial_frequency )
-								. '&TRIALTOTALBILLINGCYCLES=' . urlencode( $this->subscription->trial_total_cycles );
-			}
-
-			if( $this->subscription->add_to_next_bill == true )
-				$api_request  .= '&AUTOBILLOUTAMT=AddToNextBilling';
-
 		} elseif ( 'GetExpressCheckoutDetails' == $action ) {
 
 			$api_request .= '&METHOD=GetExpressCheckoutDetails'
 						  . '&TOKEN=' . $this->token;
-
-		} elseif ( 'GetTransactionDetails' == $action ) {
-
-			$api_request .= '&METHOD=GetTransactionDetails'
-						  . '&TRANSACTIONID=' . urlencode( $profile_or_transaction_id );
-
-		} elseif ( 'GetRecurringPaymentsProfileDetails' == $action ) {
-
-			$api_request .= '&METHOD=GetRecurringPaymentsProfileDetails'
-						  . '&ProfileID=' . urlencode( $profile_or_transaction_id );
 
 		}
 

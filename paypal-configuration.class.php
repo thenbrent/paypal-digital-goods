@@ -201,7 +201,7 @@ class PayPal_Digital_Goods_Configuration {
 	 * @return string PayPal endpoint URL
 	 */
 	public static function endpoint() {
-		return ( self::$_cache['environment'] ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
+		return ( self::$_cache['environment'] == 'sandbox' ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
 	}
 
 
@@ -213,7 +213,7 @@ class PayPal_Digital_Goods_Configuration {
 	 * @return string PayPal in context payment checkout URL
 	 */
 	public static function checkout_url() {
-		return ( self::$_cache['environment'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
+		return ( self::$_cache['environment'] == 'sandbox' ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
 	}
 
 }
