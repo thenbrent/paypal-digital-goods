@@ -24,11 +24,9 @@ require_once( 'functions.php' );
 		if( isset( $_GET['PayerID'] ) ) {
 			$paypal = create_example_purchase();
 			$response = $paypal->process_payment();
-			error_log( 'Processing payment' );
 		} else { 
 			$paypal = create_example_subscription();
 			$response = $paypal->start_subscription();
-			error_log( 'Processing subscription' );
 		}
 		?>
 
