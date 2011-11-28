@@ -25,7 +25,7 @@ class PayPal_Digital_Goods_Configuration {
 	 * 
 	 * @access private
 	 */
-	private const API_VERSION =  '76.0';
+	const API_VERSION =  '76.0';
 
 	/**
 	 * @var array array of config properties
@@ -79,7 +79,6 @@ class PayPal_Digital_Goods_Configuration {
 	 * @param string $key name of config setting
 	 * @param string $value value to set
 	 * @throws InvalidArgumentException
-	 * @throws Braintree_Exception_Configuration
 	 * @static
 	 * @return boolean
 	 */
@@ -130,9 +129,10 @@ class PayPal_Digital_Goods_Configuration {
 	 * @return mixed returns value of the property or null if the property does not exist
 	 */
 	private static function get( $key ) {
-		// throw an exception if the value hasn't been set
+
+		// Throw an exception if the value hasn't been set
 		if ( isset( self::$_cache[$key] ) && ( empty( self::$_cache[$key] ) ) )
-			throw new Braintree_Exception_Configuration( $key . ' needs to be set' );
+			throw new Exception( $key . ' needs to be set' );
 
 		if ( array_key_exists( $key, self::$_cache ) )
 			return self::$_cache[$key];

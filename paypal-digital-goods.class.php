@@ -7,6 +7,9 @@
  * @license    GPLv3 see license.txt
  * @copyright  2011 Leonard's Ego Pty. Ltd.
  */
+
+require_once( 'paypal-configuration.class.php' );
+
 abstract class PayPal_Digital_Goods {
 
 	/**
@@ -66,38 +69,27 @@ abstract class PayPal_Digital_Goods {
 	 * @param api_credentials, required, a name => value array containing your API username, password and signature.
 	 * @param args, named parameters to customise the subscription and checkout process. See description for available parameters.
 	 */
-	function __construct( $api_credentials, $args = array() ){
+	function __construct( $args = array() ){
 
-		if( empty( $api_credentials['username'] ) || empty( $api_credentials['password'] ) || empty( $api_credentials['signature'] ) )
+		if( '' == PayPal_Digital_Goods_Configuration::username() || '' == PayPal_Digital_Goods_Configuration::password() || '' == PayPal_Digital_Goods_Configuration::signature() )
 			exit( 'You must specify your PayPal API username, password & signature in the $api_credentials array. For details of how to ' );
-		elseif( empty( $args['return_url'] ) || empty( $args['cancel_url'] ) )
+		elseif( ( empty( $args['return_url'] ) && '' == PayPal_Digital_Goods_Configuration::username() ) || ( empty( $args['cancel_url'] ) && '' == PayPal_Digital_Goods_Configuration::cancel_url() ) )
 			exit( 'You must specify a return_url & cancel_url.' );
-
-		// Long form to show the required structure of the array
-		$this->api_credentials = array(
-			'username'  => $api_credentials['username'],
-			'password'  => $api_credentials['password'],
-			'signature' => $api_credentials['signature']
-		);
-		$this->api_credentials = (object)$this->api_credentials; // Readbility
 
 		$defaults = array(
 			'sandbox'       => true,
 			'version'       => '76.0',
 			'currency'      => 'USD',
 			'callback'      => '',
-			'business_name' => '' 
+			'business_name' => '',
+			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
+			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url()
 		);
 
 		$args = array_merge( $defaults, $args );
 
-		$this->version       = $args['version'];
-		$this->currency      = $args['currency'];
 		$this->callback      = $args['callback'];
 		$this->business_name = $args['business_name'];
-
-		$this->endpoint      = ( $args['sandbox'] ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
-		$this->checkout_url  = ( $args['sandbox'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
 
 		$this->return_url    = $args['return_url'];
 		$this->cancel_url    = $args['cancel_url'];
@@ -110,10 +102,10 @@ abstract class PayPal_Digital_Goods {
 	 */
 	function get_api_credentials_url(){
 
-		return 'USER=' . urlencode( $this->api_credentials->username )
-			 . '&PWD=' . urlencode( $this->api_credentials->password )
-			 . '&SIGNATURE=' . urlencode( $this->api_credentials->signature )
-			 . '&VERSION='.  urlencode( $this->version );
+		return 'USER=' . urlencode( PayPal_Digital_Goods_Configuration::username() )
+			 . '&PWD=' . urlencode( PayPal_Digital_Goods_Configuration::password() )
+			 . '&SIGNATURE=' . urlencode( PayPal_Digital_Goods_Configuration::signature() )
+			 . '&VERSION='.  urlencode( PayPal_Digital_Goods_Configuration::version() );
 	}
 
 	/**
@@ -371,7 +363,7 @@ abstract class PayPal_Digital_Goods {
 		$api_parameters = $this->get_payment_details_url( $action, $profile_id );
 
 		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $this->endpoint );
+		curl_setopt( $ch, CURLOPT_URL, PayPal_Digital_Goods_Configuration::endpoint() );
 		curl_setopt( $ch, CURLOPT_VERBOSE, 1 );
 
 		// Turn off server and peer verification
@@ -396,7 +388,7 @@ abstract class PayPal_Digital_Goods {
 		parse_str( $response, $parsed_response );
 
 		if( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) )
-			die( "Invalid HTTP Response for POST request($api_parameters) to " . $this->endpoint );
+			die( "Invalid HTTP Response for POST request($api_parameters) to " . PayPal_Digital_Goods_Configuration::endpoint() );
 
 		if( $parsed_response['ACK'] == 'Failure' )
 			die( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
@@ -460,7 +452,7 @@ abstract class PayPal_Digital_Goods {
 
 		$defaults = array(  'id'        => 'paypal-submit',
 							'type'      => 'anchor',
-							'href'      => $this->checkout_url,
+							'href'      => PayPal_Digital_Goods_Configuration::checkout_url(),
 							'alt'       => 'Submit',
 							'get_token' => true
 					);
@@ -472,7 +464,7 @@ abstract class PayPal_Digital_Goods {
 				$this->request_checkout_token();
 
 			// Include the token in the href if the default href is not overridden
-			if( $args['href'] == $this->checkout_url )
+			if( $args['href'] == PayPal_Digital_Goods_Configuration::checkout_url() )
 				$args['href'] .= $this->token;
 
 			$button = '<a href="' . $args['href'] . '" id="' . $args['id'] . '" alt="' . $args['alt'] . '"><img src="https://www.paypal.com/en_US/i/btn/btn_dg_pay_w_paypal.gif" border="0" /></a>';
@@ -508,7 +500,7 @@ abstract class PayPal_Digital_Goods {
 			$this->request_checkout_token();
 
 		// Include the token in the href if the default href is not overridden
-		return $this->checkout_url . $this->token;
+		return PayPal_Digital_Goods_Configuration::checkout_url() . $this->token;
 	}
 
 	/**
@@ -581,7 +573,7 @@ abstract class PayPal_Digital_Goods {
 	function get_currency_symbol( $currency_code = '', $echo = false ){
 
 		if( empty( $currency_code ) )
-			$currency_code = $this->currency;
+			$currency_code = PayPal_Digital_Goods_Configuration::currency();
 
 		switch( $currency_code ) {
 			case 'AUD' :

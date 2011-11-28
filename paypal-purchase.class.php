@@ -56,7 +56,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 
 			$purchase_details = array_merge( $purchase_defaults, $purchase_details );
 
-			$this->purchase = (object)$purchase;
+			$this->purchase = (object)$purchase_details;
 
 			parent::__construct();
 		}
