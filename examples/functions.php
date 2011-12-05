@@ -22,14 +22,11 @@ function set_credentials() {
 
 	PayPal_Digital_Goods_Configuration::username( 'digita_1308916325_biz_api1.gmail.com' );
 	PayPal_Digital_Goods_Configuration::password( '1308916362' );
-	PayPal_Digital_Goods_Configuration::signature( 'AFnwAcqRkyW0yPYgkjqTkIGqPbSfAyVFbnFAjXCRltVZFzlJyi2' );
+	PayPal_Digital_Goods_Configuration::signature( 'AFnwAcqRkyW0yPYgkjqTkIGqPbSfAyVFbnFAjXCRltVZFzlJyi2.HbxW' );
 
 	PayPal_Digital_Goods_Configuration::return_url( get_script_uri( 'return.php?paypal=paid' ) );
 	PayPal_Digital_Goods_Configuration::cancel_url( get_script_uri( 'return.php?paypal=cancel' ) );
-	PayPal_Digital_Goods_Configuration::business_name( get_script_uri( 'Demo Store' ) );
-
-	'business_name' => 'Demo Store',
-
+	PayPal_Digital_Goods_Configuration::business_name( 'Demo Store' );
 
 	if( PayPal_Digital_Goods_Configuration::username() == 'your_api_username' || PayPal_Digital_Goods_Configuration::password() == 'your_api_password' || PayPal_Digital_Goods_Configuration::signature() == 'your_api_signature' )
 		exit( 'You must set your API credentials in ' . __FILE__ . ' for this example to work.' );
