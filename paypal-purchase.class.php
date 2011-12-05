@@ -170,11 +170,8 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 */
 		function get_payment_details_url( $action, $transaction_id = '' ){
 
-			if( empty( $this->token ) && isset( $_GET['token'] ) )
-				$this->token = $_GET['token'];
-
 			// Setup the Payment Details
-			$api_request = $this->get_api_credentials_url();
+			$api_request = parent::get_payment_details_url( $action );
 
 			// Parameters to Request Recurring Payment Token
 			if( 'SetExpressCheckout' == $action ) {
@@ -257,5 +254,14 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		function get_purchase_price() {
 			return $this->get_currency_symbol() . $this->purchase->amount;
 		}
+
+
+		/**
+		 * Get the description for this subscription
+		 */
+		public function get_description(){
+			return $this->purchase->description;
+		}
+
 
 }

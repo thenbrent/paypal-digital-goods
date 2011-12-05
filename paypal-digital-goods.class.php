@@ -20,11 +20,6 @@ abstract class PayPal_Digital_Goods {
 	private $api_credentials;
 
 	/**
-	 * Stores the token once it has been acquired from PayPal
-	 */
-	private $token;
-
-	/**
 	 * The PayPal API Version. 
 	 * Must be 65.1 or newer for Digital Goods. Defaults to 76
 	 */
@@ -43,6 +38,11 @@ abstract class PayPal_Digital_Goods {
 	 * and https://www.paypal.com/incontext?token=**** in live mode.
 	 */
 	private $checkout_url;
+
+	/**
+	 * Stores the token once it has been acquired from PayPal
+	 */
+	protected $token;
 
 	/**
 	 * The URL on your site that the purchaser is sent to upon completing checkout.
@@ -88,6 +88,7 @@ abstract class PayPal_Digital_Goods {
 
 		$args = array_merge( $defaults, $args );
 
+		$this->currency      = $args['currency'];
 		$this->callback      = $args['callback'];
 		$this->business_name = $args['business_name'];
 
@@ -502,17 +503,6 @@ abstract class PayPal_Digital_Goods {
 		// Include the token in the href if the default href is not overridden
 		return PayPal_Digital_Goods_Configuration::checkout_url() . $this->token;
 	}
-
-	/**
-	 * Get the description for this subscription
-	 */
-	function get_description(){
-		if( ! empty( $this->subscription ) )
-			return $this->subscription->description;
-		else
-			return $this->purchase->description;
-	}
-
 
 	/**
 	 * Returns a string representing the details of the subscription. 
