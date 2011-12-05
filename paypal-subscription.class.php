@@ -164,7 +164,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		function get_payment_details_url( $action, $profile_id = '' ){
 
 			// Setup the Payment Details
-			$api_request = parent::get_payment_details_url();
+			$api_request = parent::get_payment_details_url( $action );
 
 			// Parameters to Request Recurring Payment Token
 			if( 'SetExpressCheckout' == $action ) {
@@ -276,5 +276,14 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 
 			return $value;
 		}
+
+
+		/**
+		 * Get the description for this subscription
+		 */
+		public function get_description(){
+			return $this->subscription->description;
+		}
+
 
 }
