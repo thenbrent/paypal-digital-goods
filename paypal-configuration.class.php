@@ -34,13 +34,14 @@ class PayPal_Digital_Goods_Configuration {
 	 * @static
 	 */
 	private static $_cache = array(
-		'environment' => 'sandbox',
-		'cancel_url'  => '',
-		'return_url'  => '',
-		'currency'    => 'USD',
-		'username'    => '',
-		'password'    => '',
-		'signature'   => ''
+		'environment'   => 'sandbox',
+		'business_name' => '',
+		'cancel_url'    => '',
+		'return_url'    => '',
+		'currency'      => 'USD',
+		'username'      => '',
+		'password'      => '',
+		'signature'     => ''
 		);
 
 	/**
@@ -62,13 +63,14 @@ class PayPal_Digital_Goods_Configuration {
 	 */
 	public static function reset() {
 		self::$_cache = array (
-			'environment' => 'sandbox',
-			'cancel_url'  => '',
-			'return_url'  => '',
-			'currency'    => 'USD',
-			'username'    => '',
-			'password'    => '',
-			'signature'   => ''
+			'environment'   => 'sandbox',
+			'business_name' => '',
+			'cancel_url'    => '',
+			'return_url'    => '',
+			'currency'      => 'USD',
+			'username'      => '',
+			'password'      => '',
+			'signature'     => ''
 			);
 	}
 
@@ -176,6 +178,14 @@ class PayPal_Digital_Goods_Configuration {
 
 	public static function return_url( $value = null ) {
 		return self::set_or_get( __FUNCTION__ , $value);
+	}
+
+	public static function business_name( $value = null ) {
+		return self::set_or_get( __FUNCTION__ , $value);
+	}
+
+	public static function version() {
+		return self::API_VERSION;
 	}
 
 
