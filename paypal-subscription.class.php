@@ -39,7 +39,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * 
 		 * @param $subscription_details, named parameters to customise the subscription prices, periods and frequencies.
 		 */
-		function __construct( $subscription_details = array() ){
+		public function __construct( $subscription_details = array() ){
 
 			$subscription_defaults = array(
 				'description'        => 'Digital Goods Subscription',
@@ -91,7 +91,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * 	[BUILD] => 1907759
 		 * )
 		 */
-		function start_subscription(){
+		public function start_subscription(){
 			return $this->call_paypal( 'CreateRecurringPaymentsProfile' );
 		}
 
@@ -141,7 +141,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * 	[REGULARTAXAMT] => 0.00
 		 * )
 		 */
-		function get_profile_details( $profile_id ){
+		public function get_profile_details( $profile_id ){
 
 			return $this->call_paypal( 'GetRecurringPaymentsProfileDetails', $profile_id );
 		}
@@ -161,10 +161,10 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * @param $profile_id, (optional) string. A PayPal Recurrent Payment Profile ID, required for GetRecurringPaymentsProfileDetails operation. 
 		 * @return string A URL which can be called with the @see call_paypal() method to perform the appropriate API operation.
 		 */
-		function get_payment_details_url( $action, $profile_id = '' ){
+		protected function get_payment_details_url( $action, $profile_id = '' ){
 
 			// Setup the Payment Details
-			$api_request = parent::get_payment_details_url( $action );
+			$api_request = parent::get_payment_details_url( $action, $profile_id );
 
 			// Parameters to Request Recurring Payment Token
 			if( 'SetExpressCheckout' == $action ) {
@@ -213,7 +213,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 			} elseif ( 'GetRecurringPaymentsProfileDetails' == $action ) {
 
 				$api_request .= '&METHOD=GetRecurringPaymentsProfileDetails'
-							  . '&ProfileID=' . urlencode( $profile_or_transaction_id );
+							  . '&ProfileID=' . urlencode( $profile_id );
 
 			}
 
@@ -226,7 +226,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * 
 		 * For example "$10 sign-up fee then $20 per Month for 3 Months". 
 		 */
-		function get_subscription_string(){
+		public function get_subscription_string(){
 
 			if( empty( $this->subscription ) )
 				return 'No subscription set.';
@@ -265,7 +265,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * 
 		 * For a list of the available values of $key, see the $defaults array in the constructor.
 		 */
-		function get_subscription_detail( $key ){
+		public function get_subscription_detail( $key ){
 
 			if( isset( $this->$key ) )
 				$value = $this->$key;

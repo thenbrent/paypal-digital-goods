@@ -41,7 +41,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 * 
 		 * @param args, named parameters to customise the subscription and checkout process. See description for available parameters.
 		 */
-		function __construct( $purchase_details = array() ){
+		public function __construct( $purchase_details = array() ){
 
 			/**
 			 * @todo this merge needs to be made recursive to account for 
@@ -99,7 +99,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 * 	[PAYMENTINFO_0_ACK] => Success
 		 * )
 		 */
-		function process_payment(){
+		public function process_payment(){
 			return $this->call_paypal( 'DoExpressCheckoutPayment' );
 		}
 
@@ -149,7 +149,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 * 	[L_AMT0] => XX.00
 		 * )
 		 */
-		function get_transaction_details( $transaction_id ){
+		public function get_transaction_details( $transaction_id ){
 			return $this->call_paypal( 'GetTransactionDetails', $transaction_id );
 		}
 
@@ -168,10 +168,10 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 * @param $transaction_id, (optional) string. A PayPal Transaction ID, required for the GetTransactionDetails operation. 
 		 * @return string A URI which can be use in the @see call_paypal() method to perform the appropriate API operation.
 		 */
-		function get_payment_details_url( $action, $transaction_id = '' ){
+		protected function get_payment_details_url( $action, $transaction_id = '' ){
 
 			// Setup the Payment Details
-			$api_request = parent::get_payment_details_url( $action );
+			$api_request = parent::get_payment_details_url( $action, $transaction_id );
 
 			// Parameters to Request Recurring Payment Token
 			if( 'SetExpressCheckout' == $action ) {
@@ -251,7 +251,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		/**
 		 * Returns a string representing the price for the purchase, including currency code. For example "$10". 
 		 */
-		function get_purchase_price() {
+		public function get_purchase_price() {
 			return $this->get_currency_symbol() . $this->purchase->amount;
 		}
 
