@@ -60,6 +60,7 @@ abstract class PayPal_Digital_Goods {
 	 * Available $args parameters:
 	 * - cancel_url, string, required. The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
 	 * - return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
+	 * - notify_url, string, optional. The URL for receiving Instant Payment Notification (IPN) about this transaction. 
 	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
 	 * - currency, string. The ISO 4217 currency code for the transaction. Default USD.
 	 * - callback, string. URL to which the callback request from PayPal is sent. It must start with HTTPS for production integration. It can start with HTTPS or HTTP for sandbox testing
@@ -84,6 +85,7 @@ abstract class PayPal_Digital_Goods {
 			'business_name' => '',
 			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
 			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url()
+			'notify_url'    => '',
 		);
 
 		$args = array_merge( $defaults, $args );
@@ -94,6 +96,7 @@ abstract class PayPal_Digital_Goods {
 
 		$this->return_url    = $args['return_url'];
 		$this->cancel_url    = $args['cancel_url'];
+		$this->notify_url    = $args['notify_url'];
 	}
 
 	/**
@@ -130,6 +133,9 @@ abstract class PayPal_Digital_Goods {
 			$api_request .= '&METHOD=SetExpressCheckout'
 						 .  '&RETURNURL=' . urlencode( $this->return_url )
 						 .  '&CANCELURL=' . urlencode( $this->cancel_url );
+
+			if( ! empty( $this->notify_url ) )
+				$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
 
 			if( ! empty( $this->callback ) )
 				$api_request  .=  '&CALLBACK=' . urlencode( $this->callback );
