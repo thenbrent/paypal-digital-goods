@@ -21,21 +21,21 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 * 
 		 * Available $args parameters:
 		 * - purchase_details, array, details of the purchase.
-		 * 		- description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
-		 * 		Subscription price parameters (default: $25 per month):
-		 * 		- amount, double, default 25.00. The price per period for the subscription.
-		 * 		- initial_amount, double, default 0. An optional sign up fee.
-		 * 		- average_amount, double, default 25.00. The average transaction amount, PayPal default is $25, only set higher if your monthly subscription value is higher
-		 * 		Subscription temporal parameters (default: bill once per month forever):
-		 * 		- start_date, date, default 24 hours in the future. The start date for the profile, defaults to one day in the future. Must take the form YYYY-MM-DDTHH:MM:SS and can not be in the past.
-		 * 		- period, Day|Week|Month|Semimonth, default Month. The unit of interval between billing.
-		 * 		- frequency, integer, default 1. How regularly to charge the amount. When period is Month, a frequency value of 1 would charge every month while a frequency value of 12 charges once every year.
-		 * 		- total_cycles, integer, default perpetuity. The total number of occasions the subscriber should be charged. When period is month and frequency is 1, 12 would continue the subscription for one year. The default value 0 will continue the payment for perpetuity.
-		 * 		Subscription trail period parameters (default: no trial period):
-		 * 		- trial_amount, double, default 0. The price per trial period.
-		 * 		- trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
-		 * 		- trial_frequency, integer, default 0. How regularly to charge the amount.
-		 * 		- trial_total_cycles, integer, default perpetuity. 
+		 * 		- description, string, (Optional) Description of items the buyer is purchasing.
+		 * 		Transaction Totals:
+		 * 		- amount, double, required. Total cost of the transaction to the buyer.
+		 * 		- tax, double, default 0.00. The sum of tax for all items in this order. 
+		 * 		- invoice_number, string, (Optional) Your own invoice or tracking number. Can be up to 127 single-byte alphanumeric characters.
+		 * 		Item details:
+		 * 		- items array, An array of arrays for each item in this transaction.
+		 * 			- item_name, string, Item name. 
+		 * 			- item_description, string, (Optional) Item description.
+		 * 			- item_amount, string, (Optional) Cost of this individual item.
+		 * 			- item_quantity, string, default 1. Number of this specific item.
+		 * 			- item_tax, string, (Optional) Sales tax of this individual item.
+		 * 			- item_number, string, (Optional) Your own invoice or tracking number. Can be up to 127 single-byte alphanumeric characters.
+		 *		Miscellaneous
+		 * 		- custom (Optional) A free-form field for your own use. 
 		 * 
 		 * @todo Allow purchase details to include more than one item. 
 		 * 
@@ -43,22 +43,32 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 */
 		public function __construct( $purchase_details = array() ){
 
-			/**
-			 * @todo this merge needs to be made recursive to account for 
-			 */
 			$purchase_defaults = array( 
-					'item_name'   => 'Digital Good',
+					'name'   => 'Digital Good',
 					'description' => 'Digital Good Purchase',
 					// Price
 					'amount'      => '5.00',
-					'tax'         => '0.00',
+					'tax_amount'  => '',
+					'items'       => array()
 			);
 
 			$purchase_details = array_merge( $purchase_defaults, $purchase_details );
 
+			// Make it super simple to create a single item transaction
+			if( empty( $purchase_details['items'] ) )
+				$purchase_details['items'] = array( array( 
+					'item_name'        => $purchase_details['name'],
+					'item_description' => $purchase_details['description'],
+					'item_amount'      => $purchase_details['amount'],
+					'item_tax'         => $purchase_details['tax'],
+					'item_quantity'    => 1,
+					'item_number'      => $purchase_details['number']
+				) );
+
 			$this->purchase = (object)$purchase_details;
 
 			parent::__construct();
+
 		}
 
 
@@ -182,26 +192,34 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 							  // Payment details
 							  .  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
 							  .  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
-							  .  '&PAYMENTREQUEST_0_DESC=' . $this->purchase->description // (Optional) Description of items the buyer is purchasing. 
+							  .  '&PAYMENTREQUEST_0_DESC=' . urlencode( $this->purchase->description ); // (Optional) Description of items the buyer is purchasing. 
 
-							  // Item details
-							  .  '&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital' // Indicates whether an item is digital or physical. For digital goods, this field is required and must be set to Digital.
-							  .  '&L_PAYMENTREQUEST_0_NAME0=' . $this->purchase->item_name // Item name. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-							  .  '&L_PAYMENTREQUEST_0_DESC0=' . $this->purchase->description // (Optional) Item description. Character length and limitations: 127 single-byte characters
-							  .  '&L_PAYMENTREQUEST_0_AMT0=' . $this->purchase->amount // Cost of item. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-							  .  '&L_PAYMENTREQUEST_0_QTY0=1'; // (Required) Item quantity. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed. For digital goods (L_PAYMENTREQUEST_n_ITEMCATEGORYm=Digital), this field is required.
+				// Maybe add an IPN URL
+				if( ! empty( $this->notify_url ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add tax
-				if( ! empty( $this->purchase->tax_amount ) ) {
-					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order. 
-								  .  '&L_PAYMENTREQUEST_0_TAXAMT0=' . $this->purchase->tax_amount; // (Optional) Item sales tax. Character length and limitations: Value is a positive number which cannot exceed $10,000 USD in any currency. It includes no currency symbol. It must have 2 decimal places, the decimal separator must be a period (.), and the optional thousands separator must be a comma (,).
-				}
+				if( ! empty( $this->purchase->tax_amount ) )
+					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount;
 
-				if( ! empty( $this->purchase->invoice_number ) )
-					$api_request  .= '&L_PAYMENTREQUEST_0_NUMBER0=' . $this->purchase->item_number; // (Optional) Item number. Character length and limitations: 127 single-byte characters
-
+				// Maybe add an Invoice number
 				if( ! empty( $this->purchase->invoice_number ) )
 					$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
+
+				// Item details
+				$item_count = 0;
+				foreach( $this->purchase->items as $item ) {
+					  $api_request  .= '&L_PAYMENTREQUEST_0_ITEMCATEGORY'.$item_count.'=Digital'
+									.  '&L_PAYMENTREQUEST_0_NAME'.$item_count.'=' .  urlencode( $item['item_name'] )
+									.  '&L_PAYMENTREQUEST_0_DESC'.$item_count.'=' .  urlencode( $item['item_description'] )
+									.  '&L_PAYMENTREQUEST_0_AMT'.$item_count.'=' . $item['item_amount']
+									.  '&L_PAYMENTREQUEST_0_QTY'.$item_count.'=' . $item['item_quantity'];
+
+					if( ! empty( $item->item_tax ) )
+						$api_request  .= '&L_PAYMENTREQUEST_0_TAXAMT'.$item_count.'=' . $item['item_tax'];
+
+					$item_count++;
+				}
 
 			} elseif ( 'DoExpressCheckoutPayment' == $action ) {
 
@@ -211,31 +229,41 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 	//							.  '&RETURNFMFDETAILS=1'
 
 								// Payment details
-								. '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency ) // A 3-character currency code (default is USD).
+								. '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency )
 								. '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
 
 								// Payment details
-								.  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
-								.  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
-								.  '&PAYMENTREQUEST_0_DESC=' . $this->purchase->description // (Optional) Description of items the buyer is purchasing. 
+								.  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount
+								.  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount
+								.  '&PAYMENTREQUEST_0_DESC=' . urlencode( $this->purchase->description );
 
-								// Item details
-								.  '&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital' // Indicates whether an item is digital or physical. For digital goods, this field is required and must be set to Digital.
-								.  '&L_PAYMENTREQUEST_0_NAME0=' . $this->purchase->item_name // Item name. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-								.  '&L_PAYMENTREQUEST_0_DESC0=' . $this->purchase->description // (Optional) Item description. Character length and limitations: 127 single-byte characters
-								.  '&L_PAYMENTREQUEST_0_AMT0=' . $this->purchase->amount // Cost of item. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-								.  '&L_PAYMENTREQUEST_0_QTY0=1'; // (Required) Item quantity. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed. For digital goods (L_PAYMENTREQUEST_n_ITEMCATEGORYm=Digital), this field is required.
+				// Maybe add an IPN URL
+				if( ! empty( $this->notify_url ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add tax
 				if( ! empty( $this->purchase->tax_amount ) )
-					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order. 
-								  .  '&L_PAYMENTREQUEST_0_TAXAMT0=' . $this->purchase->tax_amount; // (Optional) Item sales tax. Character length and limitations: Value is a positive number which cannot exceed $10,000 USD in any currency. It includes no currency symbol. It must have 2 decimal places, the decimal separator must be a period (.), and the optional thousands separator must be a comma (,).
+					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount;
 
-				if( ! empty( $this->purchase->invoice_number ) )
-					$api_request  .= '&L_PAYMENTREQUEST_0_NUMBER0=' . $this->purchase->item_number; // (Optional) Item number. Character length and limitations: 127 single-byte characters
-
+				// Maybe add an Invoice number
 				if( ! empty( $this->purchase->invoice_number ) )
 					$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
+
+				// Item details
+				$item_count = 0;
+				foreach( $this->purchase->items as $item ) {
+					  $api_request  .= '&L_PAYMENTREQUEST_0_ITEMCATEGORY'.$item_count.'=Digital'
+									.  '&L_PAYMENTREQUEST_0_NAME'.$item_count.'=' .  urlencode( $item['item_name'] )
+									.  '&L_PAYMENTREQUEST_0_DESC'.$item_count.'=' .  urlencode( $item['item_description'] )
+									.  '&L_PAYMENTREQUEST_0_AMT'.$item_count.'=' . $item['item_amount']
+									.  '&L_PAYMENTREQUEST_0_QTY'.$item_count.'=' . $item['item_quantity'];
+
+					if( ! empty( $item->item_tax ) )
+						$api_request  .= '&L_PAYMENTREQUEST_0_TAXAMT'.$item_count.'=' . $item['item_tax'];
+
+					$item_count++;
+				}
+
 
 			} elseif ( 'GetTransactionDetails' == $action ) {
 
