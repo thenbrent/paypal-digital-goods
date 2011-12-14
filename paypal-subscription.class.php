@@ -31,7 +31,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * 		- period, Day|Week|Month|Semimonth, default Month. The unit of interval between billing.
 		 * 		- frequency, integer, default 1. How regularly to charge the amount. When period is Month, a frequency value of 1 would charge every month while a frequency value of 12 charges once every year.
 		 * 		- total_cycles, integer, default perpetuity. The total number of occasions the subscriber should be charged. When period is month and frequency is 1, 12 would continue the subscription for one year. The default value 0 will continue the payment for perpetuity.
-		 * 		Subscription trail period parameters (default: no trial period):
+		 * 		Subscription trial period parameters (default: no trial period):
 		 * 		- trial_amount, double, default 0. The price per trial period.
 		 * 		- trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
 		 * 		- trial_frequency, integer, default 0. How regularly to charge the amount.
