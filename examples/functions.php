@@ -40,9 +40,27 @@ function create_example_purchase() {
 	set_credentials();
 
 	$purchase_details = array(
-		'item_name'   => 'Digital Good Example',
+		'name'   => 'Digital Good Purchase Example',
 		'description' => 'Example Digital Good Purchase',
 		'amount'      => '12.00',
+		'items'       => array(
+			array( // First item
+				'item_name'        => 'First item name',
+				'item_description' => 'This is a description of the first item in the cart, it costs $9.00',
+				'item_amount'      => '9.00',
+	//			'item_tax'         => '1.00',
+				'item_quantity'    => 1,
+				'item_number'      => 'XF100',
+			),
+			array( // Second item
+				'item_name'        => 'Second Item',
+				'item_description' => 'This is a description of the SECOND item in the cart, it costs $1.00 but there are 3 of them.',
+				'item_amount'      => '1.00',
+	//			'item_tax'         => '1.00',
+				'item_quantity'    => 3,
+				'item_number'      => 'XJ100',
+			),
+		)
 	);
 
 	return new PayPal_Purchase( $purchase_details );
