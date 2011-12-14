@@ -84,8 +84,8 @@ abstract class PayPal_Digital_Goods {
 			'callback'      => '',
 			'business_name' => '',
 			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
-			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url()
-			'notify_url'    => '',
+			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url(),
+			'notify_url'    => ''
 		);
 
 		$args = array_merge( $defaults, $args );
