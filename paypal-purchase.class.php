@@ -45,10 +45,11 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 
 			$purchase_defaults = array( 
 					'name'   => 'Digital Good',
-					'description' => 'Digital Good Purchase',
+					'description' => '',
 					// Price
 					'amount'      => '5.00',
 					'tax_amount'  => '',
+					'number'      => '',
 					'items'       => array()
 			);
 
@@ -60,7 +61,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 					'item_name'        => $purchase_details['name'],
 					'item_description' => $purchase_details['description'],
 					'item_amount'      => $purchase_details['amount'],
-					'item_tax'         => $purchase_details['tax'],
+					'item_tax'         => $purchase_details['tax_amount'],
 					'item_quantity'    => 1,
 					'item_number'      => $purchase_details['number']
 				) );
@@ -211,9 +212,11 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 				foreach( $this->purchase->items as $item ) {
 					  $api_request  .= '&L_PAYMENTREQUEST_0_ITEMCATEGORY'.$item_count.'=Digital'
 									.  '&L_PAYMENTREQUEST_0_NAME'.$item_count.'=' .  urlencode( $item['item_name'] )
-									.  '&L_PAYMENTREQUEST_0_DESC'.$item_count.'=' .  urlencode( $item['item_description'] )
 									.  '&L_PAYMENTREQUEST_0_AMT'.$item_count.'=' . $item['item_amount']
 									.  '&L_PAYMENTREQUEST_0_QTY'.$item_count.'=' . $item['item_quantity'];
+
+					if( ! empty( $item->item_description ) )
+						$api_request  .= '&L_PAYMENTREQUEST_0_DESC'.$item_count.'=' . urlencode( $item['item_description'] );
 
 					if( ! empty( $item->item_tax ) )
 						$api_request  .= '&L_PAYMENTREQUEST_0_TAXAMT'.$item_count.'=' . $item['item_tax'];
