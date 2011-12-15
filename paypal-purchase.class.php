@@ -44,13 +44,15 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		public function __construct( $purchase_details = array() ){
 
 			$purchase_defaults = array( 
-					'name'   => 'Digital Good',
-					'description' => '',
+					'name'           => 'Digital Good',
+					'description'    => '',
 					// Price
-					'amount'      => '5.00',
-					'tax_amount'  => '',
-					'number'      => '',
-					'items'       => array()
+					'amount'         => '5.00',
+					'tax_amount'     => '',
+					'invoice_number' => '',
+					'number'         => '',
+					'items'          => array(),
+					'custom'         => '',
 			);
 
 			$purchase_details = array_merge( $purchase_defaults, $purchase_details );
@@ -100,7 +102,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 * 	[PAYMENTINFO_0_FEEAMT] => 0.XX
 		 * 	[PAYMENTINFO_0_TAXAMT] => 0.00
 		 * 	[PAYMENTINFO_0_CURRENCYCODE] => USD
-		 * 	[PAYMENTINFO_0_PAYMENTSTATUS] => Completed
+		 * 	[PAYMENTINFO_0_PAYMENTSTATUS] => Completed | None | Denied | Expired | Failed | In-Progress | Partially-Refunded | Pending | Refunded | Reversed | Processed | Voided
 		 * 	[PAYMENTINFO_0_PENDINGREASON] => None
 		 * 	[PAYMENTINFO_0_REASONCODE] => None
 		 * 	[PAYMENTINFO_0_PROTECTIONELIGIBILITY] => Ineligible
@@ -195,10 +197,6 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 							  .  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
 							  .  '&PAYMENTREQUEST_0_DESC=' . urlencode( $this->purchase->description ); // (Optional) Description of items the buyer is purchasing. 
 
-				// Maybe add an IPN URL
-				if( ! empty( $this->notify_url ) )
-					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
-
 				// Maybe add tax
 				if( ! empty( $this->purchase->tax_amount ) )
 					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount;
@@ -206,6 +204,14 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 				// Maybe add an Invoice number
 				if( ! empty( $this->purchase->invoice_number ) )
 					$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
+
+				// Maybe add an IPN URL
+				if( ! empty( $this->notify_url ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
+
+				// Maybe add a custom field
+				if( ! empty( $this->custom ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->custom );
 
 				// Item details
 				$item_count = 0;
@@ -240,10 +246,6 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 								.  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount
 								.  '&PAYMENTREQUEST_0_DESC=' . urlencode( $this->purchase->description );
 
-				// Maybe add an IPN URL
-				if( ! empty( $this->notify_url ) )
-					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
-
 				// Maybe add tax
 				if( ! empty( $this->purchase->tax_amount ) )
 					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount;
@@ -252,21 +254,30 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 				if( ! empty( $this->purchase->invoice_number ) )
 					$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
 
+				// Maybe add an IPN URL
+				if( ! empty( $this->notify_url ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
+
+				// Maybe add a custom field
+				if( ! empty( $this->custom ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->custom );
+
 				// Item details
 				$item_count = 0;
 				foreach( $this->purchase->items as $item ) {
 					  $api_request  .= '&L_PAYMENTREQUEST_0_ITEMCATEGORY'.$item_count.'=Digital'
 									.  '&L_PAYMENTREQUEST_0_NAME'.$item_count.'=' .  urlencode( $item['item_name'] )
-									.  '&L_PAYMENTREQUEST_0_DESC'.$item_count.'=' .  urlencode( $item['item_description'] )
 									.  '&L_PAYMENTREQUEST_0_AMT'.$item_count.'=' . $item['item_amount']
 									.  '&L_PAYMENTREQUEST_0_QTY'.$item_count.'=' . $item['item_quantity'];
+
+					if( ! empty( $item->item_description ) )
+						$api_request  .= '&L_PAYMENTREQUEST_0_DESC'.$item_count.'=' . urlencode( $item['item_description'] );
 
 					if( ! empty( $item->item_tax ) )
 						$api_request  .= '&L_PAYMENTREQUEST_0_TAXAMT'.$item_count.'=' . $item['item_tax'];
 
 					$item_count++;
 				}
-
 
 			} elseif ( 'GetTransactionDetails' == $action ) {
 

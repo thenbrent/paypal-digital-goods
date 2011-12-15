@@ -245,7 +245,7 @@ abstract class PayPal_Digital_Goods {
 
 
 	/**
-	 * The Javascript to invoke the digital goods checkout process.
+	 * The Javascript to invoke the digital goods in context checkout process.
 	 * 
 	 * No need to call this function manually, required scripts are automatically printed with @see print_buy_buttion(). 
 	 * If you do print this script manually, print it after the button in the DOM to ensure the 
