@@ -35,18 +35,17 @@ Take a look at my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/).
 
 ### Configuration
 
-Before creating an instance of the class, you need to register a few settings with the  PayPal_Digital_Goods_Configuration class. 
+Before creating a payment, you need to register a few settings with the `PayPal_Digital_Goods_Configuration` class. 
 
 The minimum configuration settings required are your PayPal API Credentials, a return URI and cancel URI.
 
 ```php
 <?php 
-
 require_once( 'paypal-digital-goods.class.php' );
 
-PayPal_Digital_Goods_Configuration::username( 'digita_1308916325_biz_api1.gmail.com' );
-PayPal_Digital_Goods_Configuration::password( '1308916362' );
-PayPal_Digital_Goods_Configuration::signature( 'AFnwAcqRkyW0yPYgkjqTkIGqPbSfAyVFbnFAjXCRltVZFzlJyi2.HbxW' );
+PayPal_Digital_Goods_Configuration::username( 'PAYPAL_API_USERNAME' );
+PayPal_Digital_Goods_Configuration::password( 'PAYPAL_API_PASSWORD' );
+PayPal_Digital_Goods_Configuration::signature( 'PAYPAL_API_SIGNATURE' );
 
 PayPal_Digital_Goods_Configuration::return_url( 'http://example.com/return.php?paypal=paid' );
 PayPal_Digital_Goods_Configuration::cancel_url( 'http://example.com/return.php?paypal=cancel' );
@@ -64,7 +63,6 @@ Below is a quick example which creates a purchase of two different goods with a 
 
 ```php
 <?php 
-
 require_once( 'paypal-purchase.class.php' );
 
 $purchase_details = array(
