@@ -2,11 +2,15 @@
 /**
  * An interface for the PayPal Digital Goods with Express Checkout API with an emphasis on being friendly to humans.
  * 
- * License: GPLv2 see license.txt
- * URL: https://github.com/thenbrent/paypal-digital-goods
- * Copyright (C) 2011 Leonard's Ego Pty. Ltd.
+ * @package    PayPal
+ * 
+ * @license    GPLv3 see license.txt
+ * @copyright  2011 Leonard's Ego Pty. Ltd.
  */
-class PayPal_Digital_Goods {
+
+require_once( 'paypal-configuration.class.php' );
+
+abstract class PayPal_Digital_Goods {
 
 	/**
 	 * A array of name value pairs representing the seller's API Username, Password & Signature. 
@@ -14,16 +18,6 @@ class PayPal_Digital_Goods {
 	 * These are passed to the class via the parameters in the constructor. 
 	 */
 	private $api_credentials;
-
-	/**
-	 * Details of this particular recurring payment profile, including price, period & frequency.
-	 */
-	private $subscription;
-
-	/**
-	 * Stores the token once it has been acquired from PayPal
-	 */
-	private $token;
 
 	/**
 	 * The PayPal API Version. 
@@ -46,6 +40,11 @@ class PayPal_Digital_Goods {
 	private $checkout_url;
 
 	/**
+	 * Stores the token once it has been acquired from PayPal
+	 */
+	protected $token;
+
+	/**
 	 * The URL on your site that the purchaser is sent to upon completing checkout.
 	 */
 	public $return_url;
@@ -61,109 +60,43 @@ class PayPal_Digital_Goods {
 	 * Available $args parameters:
 	 * - cancel_url, string, required. The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
 	 * - return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
+	 * - notify_url, string, optional. The URL for receiving Instant Payment Notification (IPN) about this transaction. 
 	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
 	 * - currency, string. The ISO 4217 currency code for the transaction. Default USD.
 	 * - callback, string. URL to which the callback request from PayPal is sent. It must start with HTTPS for production integration. It can start with HTTPS or HTTP for sandbox testing
 	 * - business_name, string. A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.
-	 * - subscription, array, details of the recurring payment profile to be created.
-	 * 		- description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
-	 * 		Subscription price parameters (default: $25 per month):
-	 * 		- amount, double, default 25.00. The price per period for the subscription.
-	 * 		- initial_amount, double, default 0. An optional sign up fee.
-	 * 		- average_amount, double, default 25.00. The average transaction amount, PayPal default is $25, only set higher if your monthly subscription value is higher
-	 * 		Subscription temporal parameters (default: bill once per month forever):
-	 * 		- start_date, date, default 24 hours in the future. The start date for the profile, defaults to one day in the future. Must take the form YYYY-MM-DDTHH:MM:SS and can not be in the past.
-	 * 		- period, Day|Week|Month|Semimonth, default Month. The unit of interval between billing.
-	 * 		- frequency, integer, default 1. How regularly to charge the amount. When period is Month, a frequency value of 1 would charge every month while a frequency value of 12 charges once every year.
-	 * 		- total_cycles, integer, default perpetuity. The total number of occasions the subscriber should be charged. When period is month and frequency is 1, 12 would continue the subscription for one year. The default value 0 will continue the payment for perpetuity.
-	 * 		Subscription trail period parameters (default: no trial period):
-	 * 		- trial_amount, double, default 0. The price per trial period.
-	 * 		- trial_period, Day|Week|Month|Semimonth, default Month. The unit of interval between trial period billing.
-	 * 		- trial_frequency, integer, default 0. How regularly to charge the amount.
-	 * 		- trial_total_cycles, integer, default perpetuity. 
 	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 76.0
 	 * 
 	 * @param api_credentials, required, a name => value array containing your API username, password and signature.
 	 * @param args, named parameters to customise the subscription and checkout process. See description for available parameters.
 	 */
-	function __construct( $api_credentials, $args = array() ){
+	public function __construct( $args = array() ){
 
-		if( empty( $api_credentials['username'] ) || empty( $api_credentials['password'] ) || empty( $api_credentials['signature'] ) )
+		if( '' == PayPal_Digital_Goods_Configuration::username() || '' == PayPal_Digital_Goods_Configuration::password() || '' == PayPal_Digital_Goods_Configuration::signature() )
 			exit( 'You must specify your PayPal API username, password & signature in the $api_credentials array. For details of how to ' );
-		elseif( empty( $args['return_url'] ) || empty( $args['cancel_url'] ) )
+		elseif( ( empty( $args['return_url'] ) && '' == PayPal_Digital_Goods_Configuration::username() ) || ( empty( $args['cancel_url'] ) && '' == PayPal_Digital_Goods_Configuration::cancel_url() ) )
 			exit( 'You must specify a return_url & cancel_url.' );
-
-		// Long form to show the required structure of the array
-		$this->api_credentials = array(
-			'username'  => $api_credentials['username'],
-			'password'  => $api_credentials['password'],
-			'signature' => $api_credentials['signature']
-		);
-		$this->api_credentials = (object)$this->api_credentials; // Readbility
 
 		$defaults = array(
 			'sandbox'       => true,
 			'version'       => '76.0',
 			'currency'      => 'USD',
 			'callback'      => '',
-			'business_name' => '' 
+			'business_name' => '',
+			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
+			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url(),
+			'notify_url'    => ''
 		);
-
-		$purchase_defaults = array(
-			'item_name'   => 'Digital Good',
-			'description' => 'Digital Good Purchase',
-			// Price
-			'amount'      => '5.00',
-			'tax'         => '0.00',
-		);
-
-		$subscription_defaults = array(
-			'description'        => 'Digital Goods Subscription',
-			// Price
-			'amount'             => '25.00',
-			'initial_amount'     => '0.00',
-			'average_amount'     => '25',
-			// Temporal Details
-			'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
-			'period'             => 'Month',
-			'frequency'          => '1',
-			'total_cycles'       => '0',
-			// Trial Period
-			'trial_amount'       => '0.00',
-			'trial_period'       => 'Month',
-			'trial_frequency'    => '0',
-			'trial_total_cycles' => '0',
-			// Miscellaneous
-			'add_to_next_bill'   => true,
-		);
-
-		if( isset( $args['purchase'] ) ) {
-			$args['purchase'] = array_merge( $purchase_defaults, $args['purchase'] );
-		} else {
-			$args['subscription'] = array_merge( $subscription_defaults, $args['subscription'] );
-		}
 
 		$args = array_merge( $defaults, $args );
 
-		$this->version       = $args['version'];
 		$this->currency      = $args['currency'];
 		$this->callback      = $args['callback'];
 		$this->business_name = $args['business_name'];
 
-		if( isset( $args['purchase'] ) ) {
-			$this->purchase = (object)$args['purchase'];
-		} else {
-			$this->subscription = (object)$args['subscription'];
-
-			// Add subscription details to description
-			$this->subscription->description .= ( preg_match( '/\.\s*$/', $this->subscription->description ) ) ? $this->get_subscription_string() : '. ' . $this->get_subscription_string();
-		}
-
-		$this->endpoint      = ( $args['sandbox'] ) ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
-		$this->checkout_url  = ( $args['sandbox'] ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
-
 		$this->return_url    = $args['return_url'];
 		$this->cancel_url    = $args['cancel_url'];
+		$this->notify_url    = $args['notify_url'];
 	}
 
 	/**
@@ -171,18 +104,22 @@ class PayPal_Digital_Goods {
 	 * 
 	 * Abstracted from @see get_payment_details_url for readability. 
 	 */
-	function get_api_credentials_url(){
+	protected function get_api_credentials_url(){
 
-		return 'USER=' . urlencode( $this->api_credentials->username )
-			 . '&PWD=' . urlencode( $this->api_credentials->password )
-			 . '&SIGNATURE=' . urlencode( $this->api_credentials->signature )
-			 . '&VERSION='.  urlencode( $this->version );
+		return 'USER=' . urlencode( PayPal_Digital_Goods_Configuration::username() )
+			 . '&PWD=' . urlencode( PayPal_Digital_Goods_Configuration::password() )
+			 . '&SIGNATURE=' . urlencode( PayPal_Digital_Goods_Configuration::signature() )
+			 . '&VERSION='.  urlencode( PayPal_Digital_Goods_Configuration::version() );
 	}
 
 	/**
 	 * Map this object's transaction details to the PayPal NVP format for posting to PayPal.
+	 * 
+	 * @param $action, string. The PayPal NVP API action to create the URL for. One of SetExpressCheckout, CreateRecurringPaymentsProfile or GetRecurringPaymentsProfileDetails.
+	 * @param $profile_id, (optional) string. A PayPal Recurrent Payment Profile ID, required for GetRecurringPaymentsProfileDetails operation. 
+	 * @return string A URL which can be called with the @see call_paypal() method to perform the appropriate API operation.
 	 */
-	function get_payment_details_url( $action, $profile_id = '' ){
+	protected function get_payment_details_url( $action, $profile_or_transaction_id = '' ){
 
 		if( empty( $this->token ) && isset( $_GET['token'] ) )
 			$this->token = $_GET['token'];
@@ -197,105 +134,19 @@ class PayPal_Digital_Goods {
 						 .  '&RETURNURL=' . urlencode( $this->return_url )
 						 .  '&CANCELURL=' . urlencode( $this->cancel_url );
 
+			if( ! empty( $this->notify_url ) )
+				$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
+
 			if( ! empty( $this->callback ) )
 				$api_request  .=  '&CALLBACK=' . urlencode( $this->callback );
 
 			if( ! empty( $this->business_name ) )
 				$api_request  .=  '&BRANDNAME=' . urlencode( $this->business_name );
 
-			if( ! empty( $this->subscription ) ) { // It's a subscription
-
-				 $api_request .= '&BILLINGTYPE=RecurringPayments'
-							  .  '&BILLINGAGREEMENTDESCRIPTION=' . urlencode( $this->subscription->description )
-							  .  '&CURRENCYCODE=' . urlencode( $this->currency )
-							  .  '&MAXAMT=' . urlencode( $this->subscription->average_amount );
-
-			} else { // It's a one off purchase
-
-				$api_request  .= '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency ) // A 3-character currency code (default is USD).
-							  .  '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
-
-							  // Payment details
-							  .  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
-							  .  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
-							  .  '&PAYMENTREQUEST_0_DESC=' . $this->purchase->description // (Optional) Description of items the buyer is purchasing. 
-
-							  // Item details
-							  .  '&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital' // Indicates whether an item is digital or physical. For digital goods, this field is required and must be set to Digital.
-							  .  '&L_PAYMENTREQUEST_0_NAME0=' . $this->purchase->item_name // Item name. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-							  .  '&L_PAYMENTREQUEST_0_DESC0=' . $this->purchase->description // (Optional) Item description. Character length and limitations: 127 single-byte characters
-							  .  '&L_PAYMENTREQUEST_0_AMT0=' . $this->purchase->amount // Cost of item. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed.
-							  .  '&L_PAYMENTREQUEST_0_QTY0=1'; // (Required) Item quantity. This field is required when L_PAYMENTREQUEST_n_ITEMCATEGORYm is passed. For digital goods (L_PAYMENTREQUEST_n_ITEMCATEGORYm=Digital), this field is required.
-
-				// Maybe add tax
-				if( ! empty( $this->purchase->tax_amount ) ) {
-					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order. 
-								  .  '&L_PAYMENTREQUEST_0_TAXAMT0=' . $this->purchase->tax_amount; // (Optional) Item sales tax. Character length and limitations: Value is a positive number which cannot exceed $10,000 USD in any currency. It includes no currency symbol. It must have 2 decimal places, the decimal separator must be a period (.), and the optional thousands separator must be a comma (,).
-				}
-
-				if( ! empty( $this->purchase->invoice_number ) )
-					$api_request  .= '&L_PAYMENTREQUEST_0_NUMBER0=' . $this->purchase->item_number; // (Optional) Item number. Character length and limitations: 127 single-byte characters
-
-				if( ! empty( $this->purchase->invoice_number ) )
-					$api_request  .= '&PAYMENTREQUEST_0_INVNUM=' . $this->purchase->invoice_number; // (Optional) Your own invoice or tracking number.
-
-			}
-
-		} elseif ( 'DoExpressCheckoutPayment' == $action ) {
-/*
-			$api_request    .= '&METHOD=DoExpressCheckoutPayment' 
-							.  '&TOKEN=' . $this->token
-							// Payment details
-							.  '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency )
-							.  '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
-							.  '&PAYMENTREQUEST_0_NOTIFYURL=' // (Optional) URL for receiving Instant Payment Notification (IPN) about this transaction. If you do not specify this value in the request, the notification URL from your Merchant Profile is used, if one exists. The notify URL applies only to DoExpressCheckoutPayment. This value is ignored when set in SetExpressCheckout or GetExpressCheckoutDetails.
-
-*/
-		} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
-
-			$api_request  .=  '&METHOD=CreateRecurringPaymentsProfile' 
-							. '&TOKEN=' . $this->token
-
-							// Details
-							. '&DESC=' . urlencode( $this->subscription->description )
-							. '&CURRENCYCODE=' . urlencode( $this->currency )
-							. '&PROFILESTARTDATE=' . urlencode( $this->subscription->start_date )
-
-							// Price
-							. '&AMT=' . urlencode( $this->subscription->amount )
-							. '&INITAMT=' . urlencode( $this->subscription->initial_amount )
-
-							// Period
-							. '&BILLINGPERIOD=' . urlencode( $this->subscription->period )
-							. '&BILLINGFREQUENCY=' . urlencode( $this->subscription->frequency )
-							. '&TOTALBILLINGCYCLES=' . urlencode( $this->subscription->total_cycles )
-
-							// Specify Digital Good Payment
-							. "&L_PAYMENTREQUEST_0_ITEMCATEGORY0=Digital" // Best rates for Digital Goods sale
-							. "&L_PAYMENTREQUEST_0_NAME0=" . urlencode( $this->subscription->description )
-							. "&L_PAYMENTREQUEST_0_AMT0=" . urlencode( $this->subscription->amount )
-							. "&L_PAYMENTREQUEST_0_QTY0=1";
-
-			// Maybe add a trial period
-			if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
-				$api_request  .=  '&TRIALAMT=' . urlencode( $this->subscription->trial_amount )
-								. '&TRIALBILLINGPERIOD=' . urlencode( $this->subscription->trial_period )
-								. '&TRIALBILLINGFREQUENCY=' . urlencode( $this->subscription->trial_frequency )
-								. '&TRIALTOTALBILLINGCYCLES=' . urlencode( $this->subscription->trial_total_cycles );
-			}
-
-			if( $this->subscription->add_to_next_bill == true )
-				$api_request  .= '&AUTOBILLOUTAMT=AddToNextBilling';
-
 		} elseif ( 'GetExpressCheckoutDetails' == $action ) {
 
 			$api_request .= '&METHOD=GetExpressCheckoutDetails'
 						  . '&TOKEN=' . $this->token;
-
-		} elseif ( 'GetRecurringPaymentsProfileDetails' == $action ) {
-
-			$api_request .= '&METHOD=GetRecurringPaymentsProfileDetails'
-						  . '&ProfileID=' . urlencode( $profile_id );
 
 		}
 
@@ -314,7 +165,7 @@ class PayPal_Digital_Goods {
 	 * Return:
 	 * 
 	 */
-	function request_checkout_token(){
+	public function request_checkout_token(){
 
 		$response = $this->call_paypal( 'SetExpressCheckout' );
 
@@ -325,50 +176,12 @@ class PayPal_Digital_Goods {
 
 
 	/**
-	 * Creates a subscription by calling the PayPal CreateRecurringPaymentsProfile API operation.
-	 * 
-	 * After a billing agreement has been created in request_checkout_token, this function can
-	 * be called to start the subscription.
-	 * 
-	 * This function returned the response from PayPal, which includes a profile ID (PROFILEID). You should
-	 * save this profile ID to aid with changing and 
-	 *
-	 * IMPORTANT: PayPal does not create the recurring payments profile until you receive a success response 
-	 * from the CreateRecurringPaymentsProfile call.
-	 * 
-	 * Return: array(
-	 * 	[PROFILEID] => I%2d537HXDRJCH67
-	 * 	[PROFILESTATUS] => PendingProfile
-	 * 	[TIMESTAMP] => 2011%2d06%2d25T09%3a18%3a19Z
-	 * 	[CORRELATIONID] => beba80198304d
-	 * 	[ACK] => Success
-	 * 	[VERSION] => URL Encoded API Version, eg 
-	 * 	[BUILD] => 1907759
-	 * 
-	 */
-	function start_subscription(){
-		return $this->call_paypal( 'CreateRecurringPaymentsProfile' );
-	}
-
-
-	/**
-	 * Returns information about a subscription by calling the PayPal GetRecurringPaymentsProfileDetails API method.
-	 * 
-	 * @param $from, string, default PayPal. The Subscription details can be sourced from the object's properties if you know they will be already set or from PayPal (default).
-	 */
-	function get_profile_details( $profile_id ){
-
-		return $this->call_paypal( 'GetRecurringPaymentsProfileDetails', $profile_id );
-	}
-
-
-	/**
 	 * Calls the PayPal GetExpressCheckoutDetails methods and returns a more nicely formatted response
 	 * 
 	 * Called internally on return from set_express_checkout(). Can be called anytime to get details of 
 	 * a transaction for which you have the Token.
 	 */
-	function get_checkout_details(){
+	public function get_checkout_details(){
 		return $this->call_paypal( 'GetExpressCheckoutDetails' );
 	}
 
@@ -380,13 +193,13 @@ class PayPal_Digital_Goods {
 	 * 
 	 * @param action, string, required. The API operation to be performed, eg. GetExpressCheckoutDetails. The action is abstracted from you (the developer) by the appropriate helper function eg. GetExpressCheckoutDetails via get_checkout_details()
 	 */
-	function call_paypal( $action, $profile_id = '' ){
+	protected function call_paypal( $action, $profile_id = '' ){
 
 		// Use the one function for all PayPal API operations
 		$api_parameters = $this->get_payment_details_url( $action, $profile_id );
 
 		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $this->endpoint );
+		curl_setopt( $ch, CURLOPT_URL, PayPal_Digital_Goods_Configuration::endpoint() );
 		curl_setopt( $ch, CURLOPT_VERBOSE, 1 );
 
 		// Turn off server and peer verification
@@ -411,7 +224,7 @@ class PayPal_Digital_Goods {
 		parse_str( $response, $parsed_response );
 
 		if( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) )
-			die( "Invalid HTTP Response for POST request($api_parameters) to " . $this->endpoint );
+			die( "Invalid HTTP Response for POST request($api_parameters) to " . PayPal_Digital_Goods_Configuration::endpoint() );
 
 		if( $parsed_response['ACK'] == 'Failure' )
 			die( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
@@ -423,23 +236,22 @@ class PayPal_Digital_Goods {
 	/**
 	 * Returns this instance of the class's token.
 	 */
-	function token(){
-		if( empty( $this->token ) ) {
+	public function token(){
+		if( empty( $this->token ) )
 			$this->request_checkout_token();
-		}
 
 		return $this->token;
 	}
 
 
 	/**
-	 * The Javascript to invoke the digital goods checkout process.
+	 * The Javascript to invoke the digital goods in context checkout process.
 	 * 
 	 * No need to call this function manually, required scripts are automatically printed with @see print_buy_buttion(). 
 	 * If you do print this script manually, print it after the button in the DOM to ensure the 
 	 * click event is properly hooked.
 	 */
-	function get_script( $args = array() ){
+	public function get_script( $args = array() ){
 		
 		if( empty( $args['element_id'] ) )
 			$args['element_id'] = 'paypal-submit';
@@ -471,11 +283,11 @@ class PayPal_Digital_Goods {
 	 * 			'get_token' boolean. Whether to include a token with the href. Overridden by 'element' when it is 'submit'.
 	 * 			'type' string. Type of element to output, either anchor or image/submit. Defaults to 'anchor'. 
 	 */
-	function get_buy_button( $args = array() ){
+	public function get_buy_button( $args = array() ){
 
 		$defaults = array(  'id'        => 'paypal-submit',
 							'type'      => 'anchor',
-							'href'      => $this->checkout_url,
+							'href'      => PayPal_Digital_Goods_Configuration::checkout_url(),
 							'alt'       => 'Submit',
 							'get_token' => true
 					);
@@ -487,7 +299,7 @@ class PayPal_Digital_Goods {
 				$this->request_checkout_token();
 
 			// Include the token in the href if the default href is not overridden
-			if( $args['href'] == $this->checkout_url )
+			if( $args['href'] == PayPal_Digital_Goods_Configuration::checkout_url() )
 				$args['href'] .= $this->token;
 
 			$button = '<a href="' . $args['href'] . '" id="' . $args['id'] . '" alt="' . $args['alt'] . '"><img src="https://www.paypal.com/en_US/i/btn/btn_dg_pay_w_paypal.gif" border="0" /></a>';
@@ -509,7 +321,7 @@ class PayPal_Digital_Goods {
 	 * @uses get_buy_button()
 	 * @uses get_script()
 	 */
-	function print_buy_button( $args = array() ){
+	public function print_buy_button( $args = array() ){
 		echo $this->get_buy_button( $args );
 		echo $this->get_script( $args );
 	}
@@ -518,72 +330,14 @@ class PayPal_Digital_Goods {
 	/**
 	 * Returns the Checkout URL including a token for this transaction. 
 	 */
-	function get_checkout_url() {
+	public function get_checkout_url() {
 		if( empty( $this->token ) )
 			$this->request_checkout_token();
 
 		// Include the token in the href if the default href is not overridden
-		return $this->checkout_url . $this->token;
+		return PayPal_Digital_Goods_Configuration::checkout_url() . $this->token;
 	}
 
-	/**
-	 * Get the description for this subscription
-	 */
-	function get_description(){
-		if( ! empty( $this->subscription ) )
-			return $this->subscription->description;
-		else
-			return $this->purchase->description;
-	}
-
-
-	/**
-	 * Returns a string representing the details of the subscription. 
-	 * 
-	 * For example "$10 sign-up fee then $20 per Month for 3 Months". 
-	 */
-	function get_subscription_string(){
-
-		if( empty( $this->subscription ) )
-			return 'No subscription set.';
-
-		$subscription_details = '';
-
-		if( $this->subscription->initial_amount != '0.00' )
-			$subscription_details .= sprintf( '%s%s sign-up fee then', $this->get_currency_symbol(), $this->subscription->initial_amount );
-
-		if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
-			$subscription_details .= sprintf( ' %s %s', $this->subscription->trial_total_cycles, strtolower( $this->subscription->trial_period ) );
-			if( $this->subscription->trial_amount > '0.00' ) {
-				if( $this->subscription->trial_frequency > 1 )
-					$subscription_details .= sprintf( ' trial period charged at %s%s every %s %ss followed by', $this->get_currency_symbol(), $this->subscription->trial_amount, $this->subscription->trial_frequency, strtolower( $this->subscription->trial_period ) );
-				else
-					$subscription_details .= sprintf( ' trial period charged at %s%s per %s followed by', $this->get_currency_symbol(), $this->subscription->trial_amount, strtolower( $this->subscription->trial_period ) );
-			} else {
-					$subscription_details .= sprintf( ' free trial period followed by' );
-			}
-		}
-
-		if( $this->subscription->frequency > 1 )
-			$subscription_details .= sprintf( ' %s%s every %s %ss', $this->get_currency_symbol(), $this->subscription->amount, $this->subscription->frequency, strtolower( $this->subscription->period ) );
-		else
-			$subscription_details .= sprintf( ' %s%s per %s', $this->get_currency_symbol(), $this->subscription->amount, strtolower( $this->subscription->period ) );
-
-		if( $this->subscription->total_cycles != 0 )
-			$subscription_details .= sprintf( ' for %s %ss', $this->subscription->total_cycles, strtolower( $this->subscription->period ) );
-
-		return $subscription_details;
-	}
-
-	/**
-	 * Returns a string representing the price for the purchase, including currency code. For example "$10". 
-	 */
-	function get_purchase_price() {
-		if( ! empty( $this->subscription ) )
-			return 'No purchase price, this is a subscription.';
-		else
-			return $this->get_currency_symbol() . $this->purchase->amount;
-	}
 
 	/**
 	 * Get the symbol associated with a currency, optionally specified with '$currency_code' parameter. 
@@ -593,10 +347,10 @@ class PayPal_Digital_Goods {
 	 * @param $currency_code, string, optional, the ISO 4217 Code of the currency for which you want the Symbol, default the currency code of this object
 	 * @param $echo bool, Optionally print the symbol before returning it.
 	 **/
-	function get_currency_symbol( $currency_code = '', $echo = false ){
+	public function get_currency_symbol( $currency_code = '', $echo = false ){
 
 		if( empty( $currency_code ) )
-			$currency_code = $this->currency;
+			$currency_code = PayPal_Digital_Goods_Configuration::currency();
 
 		switch( $currency_code ) {
 			case 'AUD' :
@@ -644,38 +398,7 @@ class PayPal_Digital_Goods {
 
 
 	/**
-	 * Get the value of a given subscription detail, eg. amount
-	 * 
-	 * For a list of the available values of $key, see the $defaults array in the constructor.
+	 * Get the description of this payment
 	 */
-	function get_subscription_detail( $key ){
-
-		if( isset( $this->$key ) )
-			$value = $this->$key;
-		elseif( isset( $this->subscription->$key ) )
-			$value = $this->subscription->$key;
-		else
-			$value = false;
-
-		return $value;
-	}
-
-
-	/**
-	 * Takes a PayPal API Key and maps it to a more human friendly term. 
-	 * 
-	 * Has varying degrees of usefulness, keys like TOKEN are intelligible, 
-	 * while keys like AMT are ambiguous.
-	 */
-	function map_for_human( $key ){
-
-		switch( $key ) {
-			case 'AMT':
-				$key = 'amount';
-				break;
-		}
-
-		return $key;
-	}
-
+	abstract public function get_description();
 }
