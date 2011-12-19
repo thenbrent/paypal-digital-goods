@@ -6,7 +6,7 @@ This class connects the dots in documentation and offers a library for using the
 
 The library can be used to create both one off purchases and recurring payments (subscriptions).
 
-To see the library in action, visit my 
+To see the library in action, visit my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/)
 
 
 ## Why Use a Class
