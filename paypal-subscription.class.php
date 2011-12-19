@@ -145,7 +145,6 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * )
 		 */
 		public function get_profile_details( $profile_id ){
-
 			return $this->call_paypal( 'GetRecurringPaymentsProfileDetails', $profile_id );
 		}
 

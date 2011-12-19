@@ -51,6 +51,7 @@ class PayPal_Digital_Goods_Configuration {
 	 * @static
 	 */
 	private static $_validEnvironments = array( 
+		'live', 
 		'development', 
 		'sandbox' 
 		);
