@@ -8,6 +8,9 @@
  * @license    GPLv3 see license.txt
  * @copyright  2011 Leonard's Ego Pty. Ltd.
  */
+
+require_once( 'paypal-digital-goods.class.php' );
+
 class PayPal_Subscription extends PayPal_Digital_Goods{
 
 		/**
