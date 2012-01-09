@@ -216,7 +216,7 @@ abstract class PayPal_Digital_Goods {
 
 		// If no response was received from PayPal there is no point parsing the response
 		if( ! $response )
-			die( $action . ' failed: ' . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')' );
+			exit( $action . ' failed: ' . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')' );
 
 		curl_close( $ch );
 
@@ -224,10 +224,10 @@ abstract class PayPal_Digital_Goods {
 		parse_str( $response, $parsed_response );
 
 		if( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) )
-			die( "Invalid HTTP Response for POST request($api_parameters) to " . PayPal_Digital_Goods_Configuration::endpoint() );
+			exit( "Invalid HTTP Response for POST request($api_parameters) to " . PayPal_Digital_Goods_Configuration::endpoint() );
 
 		if( $parsed_response['ACK'] == 'Failure' )
-			die( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
+			exit( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
 
 		return $parsed_response;
 	}
