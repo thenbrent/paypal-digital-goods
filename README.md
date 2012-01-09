@@ -187,12 +187,12 @@ When cloning your application's Git repo, be sure to specify the --recursive opt
 	git clone --recursive git://github.com/username/app-name.git
 
 
-## Roadmap
+## Further Reading
 
-Future versions may include 
+PayPal has hidden some excellent articles within the x.commerce dev zone, including:
 
-* Method to create up to 10 different recurring payment profiles in one transaction.
-* Parsed responses from API calls with keys translated into more human friendly terms.
+* [An Overview of PayPal for Digital Goods](https://www.x.com/devzone/articles/overview-paypal-digital-goods)
+* [How to Implement PayPal Digital Goods](https://www.x.com/devzone/articles/how-implement-paypal-digital-goods)
 
 
 ## Pull Requests
