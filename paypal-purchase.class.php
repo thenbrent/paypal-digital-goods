@@ -51,7 +51,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 					'description'    => '',
 					// Price
 					'amount'         => '5.00',
-					'tax_amount'     => '',
+					'tax_amount'     => '0.00',
 					'invoice_number' => '',
 					'number'         => '',
 					'items'          => array(),
@@ -197,12 +197,9 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 
 							  // Payment details
 							  .  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
-							  .  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount // (Required) Sum of cost of all items in this order.
+							  .  '&PAYMENTREQUEST_0_ITEMAMT=' . ( $this->purchase->amount - $this->purchase->tax_amount ) // (Required) Sum of cost of all items in this order.
+							  .  '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order
 							  .  '&PAYMENTREQUEST_0_DESC=' . urlencode( $this->purchase->description ); // (Optional) Description of items the buyer is purchasing. 
-
-				// Maybe add tax
-				if( ! empty( $this->purchase->tax_amount ) )
-					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount;
 
 				// Maybe add an Invoice number
 				if( ! empty( $this->purchase->invoice_number ) )
@@ -219,15 +216,16 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 				// Item details
 				$item_count = 0;
 				foreach( $this->purchase->items as $item ) {
-					  $api_request  .= '&L_PAYMENTREQUEST_0_ITEMCATEGORY'.$item_count.'=Digital'
-									.  '&L_PAYMENTREQUEST_0_NAME'.$item_count.'=' .  urlencode( $item['item_name'] )
-									.  '&L_PAYMENTREQUEST_0_AMT'.$item_count.'=' . $item['item_amount']
-									.  '&L_PAYMENTREQUEST_0_QTY'.$item_count.'=' . $item['item_quantity'];
+					
+					$api_request  .= '&L_PAYMENTREQUEST_0_ITEMCATEGORY'.$item_count.'=Digital'
+								  .  '&L_PAYMENTREQUEST_0_NAME'.$item_count.'=' .  urlencode( $item['item_name'] )
+								  .  '&L_PAYMENTREQUEST_0_AMT'.$item_count.'=' . $item['item_amount']
+								  .  '&L_PAYMENTREQUEST_0_QTY'.$item_count.'=' . $item['item_quantity'];
 
-					if( ! empty( $item->item_description ) )
+					if( ! empty( $item['item_description'] ) )
 						$api_request  .= '&L_PAYMENTREQUEST_0_DESC'.$item_count.'=' . urlencode( $item['item_description'] );
 
-					if( ! empty( $item->item_tax ) )
+					if( ! empty( $item['item_tax'] ) )
 						$api_request  .= '&L_PAYMENTREQUEST_0_TAXAMT'.$item_count.'=' . $item['item_tax'];
 
 					$item_count++;
@@ -235,23 +233,20 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 
 			} elseif ( 'DoExpressCheckoutPayment' == $action ) {
 
-				$api_request    .= '&METHOD=DoExpressCheckoutPayment' 
-								.  '&TOKEN=' . $this->token
-								.  '&PAYERID=' . $_GET['PayerID']
-	//							.  '&RETURNFMFDETAILS=1'
+				$api_request .= '&METHOD=DoExpressCheckoutPayment' 
+							 .  '&TOKEN=' . $this->token
+							 .  '&PAYERID=' . $_GET['PayerID']
+	//						 .  '&RETURNFMFDETAILS=1'
 
-								// Payment details
-								. '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency )
-								. '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
+							// Payment details
+							 .  '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency )
+							 .  '&PAYMENTREQUEST_0_PAYMENTACTION=Sale' // From PayPal: When implementing digital goods, this field is required and must be set to Sale.
 
-								// Payment details
-								.  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount
-								.  '&PAYMENTREQUEST_0_ITEMAMT=' . $this->purchase->amount
-								.  '&PAYMENTREQUEST_0_DESC=' . urlencode( $this->purchase->description );
-
-				// Maybe add tax
-				if( ! empty( $this->purchase->tax_amount ) )
-					$api_request  .= '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount;
+							// Payment details
+							 .  '&PAYMENTREQUEST_0_AMT=' . $this->purchase->amount // (Required) Total cost of the transaction to the buyer. If tax charges are known, include them in this value. If not, this value should be the current sub-total of the order. If the transaction includes one or more one-time purchases, this field must be equal to the sum of the purchases. 
+							 .  '&PAYMENTREQUEST_0_ITEMAMT=' . ( $this->purchase->amount - $this->purchase->tax_amount ) // (Required) Sum of cost of all items in this order.
+							 .  '&PAYMENTREQUEST_0_TAXAMT=' . $this->purchase->tax_amount // (Optional) Sum of tax for all items in this order
+							 .  '&PAYMENTREQUEST_0_DESC=' . urlencode( $this->purchase->description ); // (Optional) Description of items the buyer is purchasing. 
 
 				// Maybe add an Invoice number
 				if( ! empty( $this->purchase->invoice_number ) )
@@ -268,15 +263,15 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 				// Item details
 				$item_count = 0;
 				foreach( $this->purchase->items as $item ) {
-					  $api_request  .= '&L_PAYMENTREQUEST_0_ITEMCATEGORY'.$item_count.'=Digital'
-									.  '&L_PAYMENTREQUEST_0_NAME'.$item_count.'=' .  urlencode( $item['item_name'] )
-									.  '&L_PAYMENTREQUEST_0_AMT'.$item_count.'=' . $item['item_amount']
-									.  '&L_PAYMENTREQUEST_0_QTY'.$item_count.'=' . $item['item_quantity'];
+					$api_request  .= '&L_PAYMENTREQUEST_0_ITEMCATEGORY'.$item_count.'=Digital'
+								  .  '&L_PAYMENTREQUEST_0_NAME'.$item_count.'=' .  urlencode( $item['item_name'] )
+								  .  '&L_PAYMENTREQUEST_0_AMT'.$item_count.'=' . $item['item_amount']
+								  .  '&L_PAYMENTREQUEST_0_QTY'.$item_count.'=' . $item['item_quantity'];
 
-					if( ! empty( $item->item_description ) )
+					if( ! empty( $item['item_description'] ) )
 						$api_request  .= '&L_PAYMENTREQUEST_0_DESC'.$item_count.'=' . urlencode( $item['item_description'] );
 
-					if( ! empty( $item->item_tax ) )
+					if( ! empty( $item['item_tax'] ) )
 						$api_request  .= '&L_PAYMENTREQUEST_0_TAXAMT'.$item_count.'=' . $item['item_tax'];
 
 					$item_count++;
