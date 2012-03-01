@@ -2,11 +2,11 @@
 
 PayPal's Digital Goods for Express Checkout service is a wonderful payment solution with disjointed documentation and an unfortunately verbose name.
 
-This class connects the dots in documentation and offers a library for using the [PayPal Digital Goods API](https://merchant.paypal.com/cgi-bin/marketingweb?cmd=_render-content&content_ID=merchant/digital_goods) that is friendly to humans.
+This class connects the dots in documentation and offers a library for using the [PayPal Digital Goods API](https://merchant.paypal.com/cgi-bin/marketingweb?cmd=_render-content&content_ID=merchant/digital_goods) that is friendly to humans (or human programmers at least).
 
 The library can be used to create both one off purchases and recurring payments (subscriptions).
 
-To see the library in action, visit my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/)
+To see the library in action, visit my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/).
 
 
 ## Why Use a Class
