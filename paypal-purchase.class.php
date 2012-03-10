@@ -228,6 +228,9 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 					if( ! empty( $item['item_tax'] ) )
 						$api_request  .= '&L_PAYMENTREQUEST_0_TAXAMT'.$item_count.'=' . $item['item_tax'];
 
+					if( ! empty( $item['item_number'] ) )
+						$api_request .= '&L_PAYMENTREQUEST_0_NUMBER'.$item_count.'=' . $item['item_number'];
+
 					$item_count++;
 				}
 
@@ -273,6 +276,9 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 
 					if( ! empty( $item['item_tax'] ) )
 						$api_request  .= '&L_PAYMENTREQUEST_0_TAXAMT'.$item_count.'=' . $item['item_tax'];
+
+					if( ! empty( $item['item_number'] ) )
+						$api_request .= '&L_PAYMENTREQUEST_0_NUMBER'.$item_count.'=' . $item['item_number'];
 
 					$item_count++;
 				}
