@@ -171,10 +171,8 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 			// Parameters to Request Recurring Payment Token
 			if( 'SetExpressCheckout' == $action ) {
 
-					 $api_request .= '&BILLINGTYPE=RecurringPayments'
-								  .  '&BILLINGAGREEMENTDESCRIPTION=' . urlencode( $this->subscription->description )
-								  .  '&CURRENCYCODE=' . urlencode( $this->currency )
-								  .  '&MAXAMT=' . urlencode( $this->subscription->average_amount );
+					 $api_request .= '&L_BILLINGTYPE0=RecurringPayments'
+								  .  '&L_BILLINGAGREEMENTDESCRIPTION0=' . urlencode( $this->subscription->description );
 
 			} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
 
