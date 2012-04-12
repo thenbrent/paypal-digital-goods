@@ -238,7 +238,6 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 				$api_request    .= '&METHOD=DoExpressCheckoutPayment' 
 								.  '&TOKEN=' . $this->token
 								.  '&PAYERID=' . $_GET['PayerID']
-	//							.  '&RETURNFMFDETAILS=1'
 
 								// Payment details
 								. '&PAYMENTREQUEST_0_CURRENCYCODE=' . urlencode( $this->currency )
