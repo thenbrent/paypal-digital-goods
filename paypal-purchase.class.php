@@ -210,8 +210,8 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add a custom field
-				if( ! empty( $this->custom ) )
-					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->custom );
+				if( ! empty( $this->purchase->custom ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->purchase->custom );
 
 				// Item details
 				$item_count = 0;
@@ -260,8 +260,8 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add a custom field
-				if( ! empty( $this->custom ) )
-					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->custom );
+				if( ! empty( $this->purchase->custom ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->purchase->custom );
 
 				// Item details
 				$item_count = 0;
