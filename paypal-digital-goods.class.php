@@ -62,7 +62,6 @@ abstract class PayPal_Digital_Goods {
 	 * - return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
 	 * - notify_url, string, optional. The URL for receiving Instant Payment Notification (IPN) about this transaction. 
 	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
-	 * - currency, string. The ISO 4217 currency code for the transaction. Default USD.
 	 * - callback, string. URL to which the callback request from PayPal is sent. It must start with HTTPS for production integration. It can start with HTTPS or HTTP for sandbox testing
 	 * - business_name, string. A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.
 	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 76.0
@@ -80,7 +79,6 @@ abstract class PayPal_Digital_Goods {
 		$defaults = array(
 			'sandbox'       => true,
 			'version'       => '76.0',
-			'currency'      => 'USD',
 			'callback'      => '',
 			'business_name' => '',
 			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
@@ -90,7 +88,7 @@ abstract class PayPal_Digital_Goods {
 
 		$args = array_merge( $defaults, $args );
 
-		$this->currency      = $args['currency'];
+		$this->currency      = PayPal_Digital_Goods_Configuration::currency();
 		$this->callback      = $args['callback'];
 		$this->business_name = $args['business_name'];
 
