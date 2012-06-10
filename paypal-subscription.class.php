@@ -46,6 +46,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 
 			$subscription_defaults = array(
 				'description'        => 'Digital Goods Subscription',
+				'invoice_number'     => '',
 				// Price
 				'amount'             => '25.00',
 				'initial_amount'     => '0.00',
@@ -100,6 +101,14 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 
 
 		/**
+		 * A wrapper for the start_subscription function to implement the unified Digital Goods API.
+		 */
+		public function process(){
+			return $this->start_subscription();
+		}
+
+
+		/**
 		 * Returns information about a subscription by calling the PayPal GetRecurringPaymentsProfileDetails API method.
 		 * 
 		 * @param $profile_id, string. The profile ID of the subscription for which the details should be looked up.
@@ -146,6 +155,21 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 */
 		public function get_profile_details( $profile_id ){
 			return $this->call_paypal( 'GetRecurringPaymentsProfileDetails', $profile_id );
+		}
+
+
+		/**
+		 * A wrapper for the get_profile_details function to provide a unified API.
+		 * 
+		 * Accepts either a profile ID or a $response array as returned from the 
+		 * SetExpressCheckout call. 
+		 */
+		public function get_details( $profile ){
+
+			if ( is_array( $profile ) && isset( $profile['PROFILEID'] ) )
+				$profile = $profile['PROFILEID'];
+
+			return $this->get_profile_details( $profile );
 		}
 
 
@@ -200,6 +224,10 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 								. "&L_PAYMENTREQUEST_0_NAME0=" . urlencode( $this->subscription->description )
 								. "&L_PAYMENTREQUEST_0_AMT0=" . urlencode( $this->subscription->amount )
 								. "&L_PAYMENTREQUEST_0_QTY0=1";
+
+				// Maybe add an Invoice number
+				if( ! empty( $this->subscription->invoice_number ) )
+					$api_request  .= '&PROFILEREFERENCE=' . $this->subscription->invoice_number; // (Optional) Your own invoice or tracking number.
 
 				// Maybe add a trial period
 				if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
