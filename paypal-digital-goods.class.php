@@ -83,7 +83,7 @@ abstract class PayPal_Digital_Goods {
 			'business_name' => '',
 			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
 			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url(),
-			'notify_url'    => ''
+			'notify_url'    => PayPal_Digital_Goods_Configuration::notify_url()
 		);
 
 		$args = array_merge( $defaults, $args );
@@ -109,6 +109,7 @@ abstract class PayPal_Digital_Goods {
 			 . '&SIGNATURE=' . urlencode( PayPal_Digital_Goods_Configuration::signature() )
 			 . '&VERSION='.  urlencode( PayPal_Digital_Goods_Configuration::version() );
 	}
+
 
 	/**
 	 * Map this object's transaction details to the PayPal NVP format for posting to PayPal.
@@ -399,4 +400,16 @@ abstract class PayPal_Digital_Goods {
 	 * Get the description of this payment
 	 */
 	abstract public function get_description();
+
+
+	/**
+	 * A unified API for processing a payment or subscription.
+	 */
+	abstract public function process();
+
+
+	/**
+	 * A unified API for getting the details of a purchase or subscription.
+	 */
+	abstract public function get_details( $transaction_or_profile_id );
 }
