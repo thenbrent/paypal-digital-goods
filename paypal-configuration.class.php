@@ -38,6 +38,7 @@ class PayPal_Digital_Goods_Configuration {
 		'business_name' => '',
 		'cancel_url'    => '',
 		'return_url'    => '',
+		'notify_url'    => '',
 		'currency'      => 'USD',
 		'username'      => '',
 		'password'      => '',
@@ -68,6 +69,7 @@ class PayPal_Digital_Goods_Configuration {
 			'business_name' => '',
 			'cancel_url'    => '',
 			'return_url'    => '',
+			'notify_url'    => '',
 			'currency'      => 'USD',
 			'username'      => '',
 			'password'      => '',
@@ -154,35 +156,39 @@ class PayPal_Digital_Goods_Configuration {
 	 * @return mixed returns value or true on set
 	 */
 	public static function environment( $value = null ) {
-		return self::set_or_get( __FUNCTION__, $value);
+		return self::set_or_get( __FUNCTION__, $value );
 	}
 
 	public static function username( $value = null ) {
-		return self::set_or_get( __FUNCTION__, $value);
+		return self::set_or_get( __FUNCTION__, $value );
 	}
 
 	public static function password( $value = null ) {
-		return self::set_or_get( __FUNCTION__, $value);
+		return self::set_or_get( __FUNCTION__, $value );
 	}
 
 	public static function signature( $value = null ) {
-		return self::set_or_get( __FUNCTION__ , $value);
+		return self::set_or_get( __FUNCTION__ , $value );
 	}
 
 	public static function currency( $value = null ) {
-		return self::set_or_get( __FUNCTION__ , $value);
+		return self::set_or_get( __FUNCTION__ , $value );
 	}
 
 	public static function cancel_url( $value = null ) {
-		return self::set_or_get( __FUNCTION__ , $value);
+		return self::set_or_get( __FUNCTION__ , $value );
 	}
 
 	public static function return_url( $value = null ) {
-		return self::set_or_get( __FUNCTION__ , $value);
+		return self::set_or_get( __FUNCTION__ , $value );
+	}
+
+	public static function notify_url( $value = null ) {
+		return self::set_or_get( __FUNCTION__ , $value );
 	}
 
 	public static function business_name( $value = null ) {
-		return self::set_or_get( __FUNCTION__ , $value);
+		return self::set_or_get( __FUNCTION__ , $value );
 	}
 
 	public static function version() {
