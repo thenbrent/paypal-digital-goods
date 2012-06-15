@@ -51,6 +51,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 				'amount'             => '25.00',
 				'initial_amount'     => '0.00',
 				'average_amount'     => '25',
+				'tax_amount'         => '0.00',
 				// Temporal Details
 				'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
 				'period'             => 'Month',
@@ -195,10 +196,14 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 			// Parameters to Request Recurring Payment Token
 			if( 'SetExpressCheckout' == $action ) {
 
-					 $api_request .= '&BILLINGTYPE=RecurringPayments'
-								  .  '&BILLINGAGREEMENTDESCRIPTION=' . urlencode( $this->subscription->description )
-								  .  '&CURRENCYCODE=' . urlencode( $this->currency )
-								  .  '&MAXAMT=' . urlencode( $this->subscription->average_amount );
+				$api_request .= '&L_BILLINGTYPE0=RecurringPayments'
+							  .  '&L_BILLINGAGREEMENTDESCRIPTION0=' . urlencode( $this->subscription->description )
+							  .  '&CURRENCYCODE=' . urlencode( $this->currency )
+							  .  '&MAXAMT=' . urlencode( $this->subscription->average_amount );
+
+				// Maybe add an IPN URL
+				if( ! empty( $this->notify_url ) )
+					$api_request  .=  '&NOTIFYURL=' . urlencode( $this->notify_url );
 
 			} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
 
@@ -213,6 +218,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 								// Price
 								. '&AMT=' . urlencode( $this->subscription->amount )
 								. '&INITAMT=' . urlencode( $this->subscription->initial_amount )
+								. '&TAXAMT=' . urlencode( $this->subscription->tax_amount )
 
 								// Period
 								. '&BILLINGPERIOD=' . urlencode( $this->subscription->period )
@@ -228,6 +234,10 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 				// Maybe add an Invoice number
 				if( ! empty( $this->subscription->invoice_number ) )
 					$api_request  .= '&PROFILEREFERENCE=' . $this->subscription->invoice_number; // (Optional) Your own invoice or tracking number.
+
+				// Maybe add an IPN URL
+				if( ! empty( $this->notify_url ) )
+					$api_request  .=  '&NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add a trial period
 				if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
