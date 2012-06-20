@@ -254,6 +254,8 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 
 				if( $this->subscription->add_to_next_bill == true )
 					$api_request  .= '&AUTOBILLOUTAMT=AddToNextBilling';
+				else
+					$api_request  .= '&AUTOBILLOUTAMT=NoAutoBill';
 
 			} elseif ( 'GetRecurringPaymentsProfileDetails' == $action ) {
 
