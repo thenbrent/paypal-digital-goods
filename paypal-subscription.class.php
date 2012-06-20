@@ -45,25 +45,26 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		public function __construct( $subscription_details = array() ){
 
 			$subscription_defaults = array(
-				'description'        => 'Digital Goods Subscription',
-				'invoice_number'     => '',
+				'description'         => 'Digital Goods Subscription',
+				'invoice_number'      => '',
+				'max_failed_payments' => '',
 				// Price
-				'amount'             => '25.00',
-				'initial_amount'     => '0.00',
-				'average_amount'     => '25',
-				'tax_amount'         => '0.00',
+				'amount'              => '25.00',
+				'initial_amount'      => '0.00',
+				'average_amount'      => '25',
+				'tax_amount'          => '0.00',
 				// Temporal Details
-				'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
-				'period'             => 'Month',
-				'frequency'          => '1',
-				'total_cycles'       => '0',
+				'start_date'          => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
+				'period'              => 'Month',
+				'frequency'           => '1',
+				'total_cycles'        => '0',
 				// Trial Period
-				'trial_amount'       => '0.00',
-				'trial_period'       => 'Month',
-				'trial_frequency'    => '0',
-				'trial_total_cycles' => '0',
+				'trial_amount'        => '0.00',
+				'trial_period'        => 'Month',
+				'trial_frequency'     => '0',
+				'trial_total_cycles'  => '0',
 				// Miscellaneous
-				'add_to_next_bill'   => true,
+				'add_to_next_bill'    => true,
 			);
 
 			$subscription_details = array_merge( $subscription_defaults, $subscription_details );
@@ -230,6 +231,10 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 								. "&L_PAYMENTREQUEST_0_NAME0=" . urlencode( $this->subscription->description )
 								. "&L_PAYMENTREQUEST_0_AMT0=" . urlencode( $this->subscription->amount )
 								. "&L_PAYMENTREQUEST_0_QTY0=1";
+
+				// Maybe add an Invoice number
+				if( ! empty( $this->subscription->max_failed_payments ) )
+					$api_request  .= '&MAXFAILEDPAYMENTS=' . $this->subscription->max_failed_payments;
 
 				// Maybe add an Invoice number
 				if( ! empty( $this->subscription->invoice_number ) )
