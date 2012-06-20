@@ -197,9 +197,9 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 			if( 'SetExpressCheckout' == $action ) {
 
 				$api_request .= '&L_BILLINGTYPE0=RecurringPayments'
-							  .  '&L_BILLINGAGREEMENTDESCRIPTION0=' . urlencode( $this->subscription->description )
-							  .  '&CURRENCYCODE=' . urlencode( $this->currency )
-							  .  '&MAXAMT=' . urlencode( $this->subscription->average_amount );
+							  . '&L_BILLINGAGREEMENTDESCRIPTION0=' . urlencode( $this->subscription->description )
+							  . '&CURRENCYCODE=' . urlencode( $this->currency )
+							  . '&MAXAMT=' . urlencode( $this->subscription->average_amount );
 
 				// Maybe add an IPN URL
 				if( ! empty( $this->notify_url ) )

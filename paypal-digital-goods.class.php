@@ -61,6 +61,7 @@ abstract class PayPal_Digital_Goods {
 	 * - cancel_url, string, required. The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
 	 * - return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
 	 * - notify_url, string, optional. The URL for receiving Instant Payment Notification (IPN) about this transaction. 
+	 * - solution_type, string, optional. Type of checkout flow. It is one of Sole (default, buyer does not need to create a PayPal account to check out) or Mark (buyer must have a PayPal account to check out)
 	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
 	 * - business_name, string. A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.
 	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 76.0
@@ -79,6 +80,7 @@ abstract class PayPal_Digital_Goods {
 			'sandbox'       => true,
 			'version'       => '76.0',
 			'business_name' => '',
+			'solution_type' => 'Sole',
 			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
 			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url(),
 			'notify_url'    => PayPal_Digital_Goods_Configuration::notify_url()
@@ -92,6 +94,7 @@ abstract class PayPal_Digital_Goods {
 		$this->return_url    = $args['return_url'];
 		$this->cancel_url    = $args['cancel_url'];
 		$this->notify_url    = $args['notify_url'];
+		$this->solution_type = $args['solution_type'];
 	}
 
 	/**
@@ -128,6 +131,7 @@ abstract class PayPal_Digital_Goods {
 
 			$api_request .= '&METHOD=SetExpressCheckout'
 						 .  '&RETURNURL=' . urlencode( $this->return_url )
+						 .  '&SOLUTIONTYPE=' . urlencode( $this->solution_type )
 						 .  '&CANCELURL=' . urlencode( $this->cancel_url );
 
 			if( ! empty( $this->notify_url ) )
