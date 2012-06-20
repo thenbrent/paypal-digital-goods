@@ -61,9 +61,8 @@ abstract class PayPal_Digital_Goods {
 	 * - cancel_url, string, required. The URL on your site that the purchaser is sent to when cancelling a payment during the checkout process.
 	 * - return_url, string, required. The URL on your site that the purchaser is sent to upon completing checkout.
 	 * - notify_url, string, optional. The URL for receiving Instant Payment Notification (IPN) about this transaction. 
+	 * - solution_type, string, optional. Type of checkout flow. It is one of Sole (default, buyer does not need to create a PayPal account to check out) or Mark (buyer must have a PayPal account to check out)
 	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
-	 * - currency, string. The ISO 4217 currency code for the transaction. Default USD.
-	 * - callback, string. URL to which the callback request from PayPal is sent. It must start with HTTPS for production integration. It can start with HTTPS or HTTP for sandbox testing
 	 * - business_name, string. A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.
 	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 76.0
 	 * 
@@ -80,23 +79,22 @@ abstract class PayPal_Digital_Goods {
 		$defaults = array(
 			'sandbox'       => true,
 			'version'       => '76.0',
-			'currency'      => 'USD',
-			'callback'      => '',
 			'business_name' => '',
+			'solution_type' => 'Sole',
 			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
 			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url(),
-			'notify_url'    => ''
+			'notify_url'    => PayPal_Digital_Goods_Configuration::notify_url()
 		);
 
 		$args = array_merge( $defaults, $args );
 
-		$this->currency      = $args['currency'];
-		$this->callback      = $args['callback'];
+		$this->currency      = PayPal_Digital_Goods_Configuration::currency();
 		$this->business_name = $args['business_name'];
 
 		$this->return_url    = $args['return_url'];
 		$this->cancel_url    = $args['cancel_url'];
 		$this->notify_url    = $args['notify_url'];
+		$this->solution_type = $args['solution_type'];
 	}
 
 	/**
@@ -111,6 +109,7 @@ abstract class PayPal_Digital_Goods {
 			 . '&SIGNATURE=' . urlencode( PayPal_Digital_Goods_Configuration::signature() )
 			 . '&VERSION='.  urlencode( PayPal_Digital_Goods_Configuration::version() );
 	}
+
 
 	/**
 	 * Map this object's transaction details to the PayPal NVP format for posting to PayPal.
@@ -132,13 +131,11 @@ abstract class PayPal_Digital_Goods {
 
 			$api_request .= '&METHOD=SetExpressCheckout'
 						 .  '&RETURNURL=' . urlencode( $this->return_url )
+						 .  '&SOLUTIONTYPE=' . urlencode( $this->solution_type )
 						 .  '&CANCELURL=' . urlencode( $this->cancel_url );
 
 			if( ! empty( $this->notify_url ) )
-				$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
-
-			if( ! empty( $this->callback ) )
-				$api_request  .=  '&CALLBACK=' . urlencode( $this->callback );
+				$api_request  .=  '&NOTIFYURL=' . urlencode( $this->notify_url );
 
 			if( ! empty( $this->business_name ) )
 				$api_request  .=  '&BRANDNAME=' . urlencode( $this->business_name );
@@ -401,4 +398,16 @@ abstract class PayPal_Digital_Goods {
 	 * Get the description of this payment
 	 */
 	abstract public function get_description();
+
+
+	/**
+	 * A unified API for processing a payment or subscription.
+	 */
+	abstract public function process();
+
+
+	/**
+	 * A unified API for getting the details of a purchase or subscription.
+	 */
+	abstract public function get_details( $transaction_or_profile_id );
 }

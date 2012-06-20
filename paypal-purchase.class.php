@@ -121,6 +121,14 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 
 
 		/**
+		 * A wrapper for the process_payment function to implement the unified Digital Goods API.
+		 */
+		public function process(){
+			return $this->process_payment();
+		}
+
+
+		/**
 		 * Returns information about a purchase transaction by calling the PayPal GetTransactionDetails API method.
 		 * 
 		 * @param $profile_id, string. The profile ID of the subscription for which the details should be looked up.
@@ -171,6 +179,21 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 
 
 		/**
+		 * A wrapper for the get_transaction_details function implementing the unified API.
+		 * 
+		 * Accepts either a get_transaction_details ID or a $response array as returned
+		 * from the SetExpressCheckout call.
+		 */
+		public function get_details( $transaction ){
+
+			if ( is_array( $transaction ) && isset( $transaction['PAYMENTINFO_0_TRANSACTIONID'] ) )
+				$transaction = $transaction['PAYMENTINFO_0_TRANSACTIONID'];
+
+			return $this->get_transaction_details( $transaction );
+		}
+
+
+		/**
 		 * Overloads the base class's get_payment_details_url to map the subscription details 
 		 * to the PayPal NVP format for posting to PayPal.
 		 * 
@@ -210,8 +233,8 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add a custom field
-				if( ! empty( $this->custom ) )
-					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->custom );
+				if( ! empty( $this->purchase->custom ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->purchase->custom );
 
 				// Item details
 				$item_count = 0;
@@ -259,8 +282,8 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 					$api_request  .=  '&PAYMENTREQUEST_0_NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add a custom field
-				if( ! empty( $this->custom ) )
-					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->custom );
+				if( ! empty( $this->purchase->custom ) )
+					$api_request  .=  '&PAYMENTREQUEST_0_CUSTOM=' . urlencode( $this->purchase->custom );
 
 				// Item details
 				$item_count = 0;

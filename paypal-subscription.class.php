@@ -46,10 +46,12 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 
 			$subscription_defaults = array(
 				'description'        => 'Digital Goods Subscription',
+				'invoice_number'     => '',
 				// Price
 				'amount'             => '25.00',
 				'initial_amount'     => '0.00',
 				'average_amount'     => '25',
+				'tax_amount'         => '0.00',
 				// Temporal Details
 				'start_date'         => date( 'Y-m-d\TH:i:s', time() + ( 24 * 60 * 60 ) ),
 				'period'             => 'Month',
@@ -96,6 +98,14 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 */
 		public function start_subscription(){
 			return $this->call_paypal( 'CreateRecurringPaymentsProfile' );
+		}
+
+
+		/**
+		 * A wrapper for the start_subscription function to implement the unified Digital Goods API.
+		 */
+		public function process(){
+			return $this->start_subscription();
 		}
 
 
@@ -150,6 +160,21 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 
 
 		/**
+		 * A wrapper for the get_profile_details function to provide a unified API.
+		 * 
+		 * Accepts either a profile ID or a $response array as returned from the 
+		 * SetExpressCheckout call. 
+		 */
+		public function get_details( $profile ){
+
+			if ( is_array( $profile ) && isset( $profile['PROFILEID'] ) )
+				$profile = $profile['PROFILEID'];
+
+			return $this->get_profile_details( $profile );
+		}
+
+
+		/**
 		 * Overloads the base class's get_payment_details_url to map the subscription details 
 		 * to the PayPal NVP format for posting to PayPal.
 		 * 
@@ -171,8 +196,14 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 			// Parameters to Request Recurring Payment Token
 			if( 'SetExpressCheckout' == $action ) {
 
-					 $api_request .= '&L_BILLINGTYPE0=RecurringPayments'
-								  .  '&L_BILLINGAGREEMENTDESCRIPTION0=' . urlencode( $this->subscription->description );
+				$api_request .= '&L_BILLINGTYPE0=RecurringPayments'
+							  . '&L_BILLINGAGREEMENTDESCRIPTION0=' . urlencode( $this->subscription->description )
+							  . '&CURRENCYCODE=' . urlencode( $this->currency )
+							  . '&MAXAMT=' . urlencode( $this->subscription->average_amount );
+
+				// Maybe add an IPN URL
+				if( ! empty( $this->notify_url ) )
+					$api_request  .=  '&NOTIFYURL=' . urlencode( $this->notify_url );
 
 			} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
 
@@ -187,6 +218,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 								// Price
 								. '&AMT=' . urlencode( $this->subscription->amount )
 								. '&INITAMT=' . urlencode( $this->subscription->initial_amount )
+								. '&TAXAMT=' . urlencode( $this->subscription->tax_amount )
 
 								// Period
 								. '&BILLINGPERIOD=' . urlencode( $this->subscription->period )
@@ -198,6 +230,14 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 								. "&L_PAYMENTREQUEST_0_NAME0=" . urlencode( $this->subscription->description )
 								. "&L_PAYMENTREQUEST_0_AMT0=" . urlencode( $this->subscription->amount )
 								. "&L_PAYMENTREQUEST_0_QTY0=1";
+
+				// Maybe add an Invoice number
+				if( ! empty( $this->subscription->invoice_number ) )
+					$api_request  .= '&PROFILEREFERENCE=' . $this->subscription->invoice_number; // (Optional) Your own invoice or tracking number.
+
+				// Maybe add an IPN URL
+				if( ! empty( $this->notify_url ) )
+					$api_request  .=  '&NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add a trial period
 				if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
