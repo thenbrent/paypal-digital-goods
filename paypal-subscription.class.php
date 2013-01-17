@@ -181,9 +181,9 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * Accepts either a profile ID or a $response array as returned from the 
 		 * SetExpressCheckout call. 
 		 */
-		public function manage_subscription_status( $profile_id, $status ){
+		public function manage_subscription_status( $profile_id, $status, $note = '' ){
 
-			return $this->call_paypal( 'ManageRecurringPaymentsProfileStatus', $profile_id, $status );
+			return $this->call_paypal( 'ManageRecurringPaymentsProfileStatus', $profile_id, $status, array( 'note' => $note ) );
 		}
 
 
@@ -201,7 +201,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * @param $profile_id, (optional) string. A PayPal Recurrent Payment Profile ID, required for GetRecurringPaymentsProfileDetails operation. 
 		 * @return string A URL which can be called with the @see call_paypal() method to perform the appropriate API operation.
 		 */
-		protected function get_payment_details_url( $action, $profile_id = '', $status = '' ){
+		protected function get_payment_details_url( $action, $profile_id = '', $status = '', $args = array() ){
 
 			// Setup the Payment Details
 			$api_request = parent::get_payment_details_url( $action, $profile_id );
@@ -279,6 +279,10 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 				$api_request .= '&METHOD=ManageRecurringPaymentsProfileStatus'
 							  . '&PROFILEID=' . urlencode( $profile_id )
 							  . '&ACTION=' . urlencode( $status );
+
+				if ( isset( $args['note'] ) && ! empty( $args['note'] ) )
+					$api_request .= '&NOTE=' . urlencode( $args['note'] );
+
 			}
 
 			return $api_request;

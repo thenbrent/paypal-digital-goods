@@ -190,10 +190,10 @@ abstract class PayPal_Digital_Goods {
 	 * 
 	 * @param action, string, required. The API operation to be performed, eg. GetExpressCheckoutDetails. The action is abstracted from you (the developer) by the appropriate helper function eg. GetExpressCheckoutDetails via get_checkout_details()
 	 */
-	protected function call_paypal( $action, $profile_id = '', $status = '' ){
+	protected function call_paypal( $action, $profile_id = '', $status = '', $args = array() ){
 
 		// Use the one function for all PayPal API operations
-		$api_parameters = $this->get_payment_details_url( $action, $profile_id, $status );
+		$api_parameters = $this->get_payment_details_url( $action, $profile_id, $status, $args );
 
 		$ch = curl_init();
 		curl_setopt( $ch, CURLOPT_URL, PayPal_Digital_Goods_Configuration::endpoint() );
