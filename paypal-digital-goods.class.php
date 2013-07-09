@@ -134,9 +134,6 @@ abstract class PayPal_Digital_Goods {
 						 .  '&SOLUTIONTYPE=' . urlencode( $this->solution_type )
 						 .  '&CANCELURL=' . urlencode( $this->cancel_url );
 
-			if( ! empty( $this->notify_url ) )
-				$api_request  .=  '&NOTIFYURL=' . urlencode( $this->notify_url );
-
 			if( ! empty( $this->business_name ) )
 				$api_request  .=  '&BRANDNAME=' . urlencode( $this->business_name );
 

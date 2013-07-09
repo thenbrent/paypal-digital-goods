@@ -214,10 +214,6 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 							  . '&CURRENCYCODE=' . urlencode( $this->currency )
 							  . '&MAXAMT=' . urlencode( $this->subscription->average_amount );
 
-				// Maybe add an IPN URL
-				if( ! empty( $this->notify_url ) )
-					$api_request  .=  '&NOTIFYURL=' . urlencode( $this->notify_url );
-
 			} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
 
 				$api_request  .=  '&METHOD=CreateRecurringPaymentsProfile' 
@@ -251,10 +247,6 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 				// Maybe add an Invoice number
 				if( ! empty( $this->subscription->invoice_number ) )
 					$api_request  .= '&PROFILEREFERENCE=' . $this->subscription->invoice_number; // (Optional) Your own invoice or tracking number.
-
-				// Maybe add an IPN URL
-				if( ! empty( $this->notify_url ) )
-					$api_request  .=  '&NOTIFYURL=' . urlencode( $this->notify_url );
 
 				// Maybe add a trial period
 				if( $this->subscription->trial_frequency > 0 || $this->subscription->trial_total_cycles > 0 ) {
