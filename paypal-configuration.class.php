@@ -42,7 +42,8 @@ class PayPal_Digital_Goods_Configuration {
 		'currency'      => 'USD',
 		'username'      => '',
 		'password'      => '',
-		'signature'     => ''
+		'signature'     => '',
+		'incontext_url' => 'yes'
 		);
 
 	/**
@@ -73,7 +74,8 @@ class PayPal_Digital_Goods_Configuration {
 			'currency'      => 'USD',
 			'username'      => '',
 			'password'      => '',
-			'signature'     => ''
+			'signature'     => '',
+      'incontext_url' => 'yes'
 			);
 	}
 
@@ -190,6 +192,10 @@ class PayPal_Digital_Goods_Configuration {
 	public static function business_name( $value = null ) {
 		return self::set_or_get( __FUNCTION__ , $value );
 	}
+	
+	public static function incontext_url( $value = null ) {
+		return self::set_or_get( __FUNCTION__ , $value );
+	}
 
 	public static function version() {
 		return self::API_VERSION;
@@ -223,14 +229,21 @@ class PayPal_Digital_Goods_Configuration {
 
 
 	/**
-	 * Returns the base PayPal Digital Goods incontext checkout URL based on the environment config value.
+	 * Returns the base PayPal Digital Goods checkout URL based on the environment config value.
 	 *
 	 * @access public
 	 * @static
-	 * @return string PayPal in context payment checkout URL
+	 * @return string PayPal in context/webscr payment checkout URL
 	 */
 	public static function checkout_url() {
-		return ( self::$_cache['environment'] == 'sandbox' ) ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.paypal.com/incontext?token=';
+    
+    if (self::$_cache['environment'] == 'sandbox') {      
+      $url = self::$_cache['incontext_url'] == 'yes' ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+    } else {
+      $url = self::$_cache['incontext_url'] == 'yes' ? 'https://www.paypal.com/incontext?token=' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+    }
+    
+    return $url;
 	}
 
 }
