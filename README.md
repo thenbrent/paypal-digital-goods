@@ -1,4 +1,4 @@
-# PayPal Digital Goods for Express Checkout PHP Library
+# PayPal Digital Goods PHP Library
 
 PayPal's Digital Goods for Express Checkout service is a wonderful payment solution with disjointed documentation and an unfortunately verbose name.
 
