@@ -6,7 +6,7 @@ This library connects the dots to make it easier to write code for integrating w
 
 To see the library in action, visit my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/).
 
-If you are not a programmer, or just want to save yourself the heartache of working with PayPal APIs, try setting up [PayPal Digital Goods with WooCommerce](http://www.woothemes.com/products/paypal-digital-goods-gateway/) - not code required.
+If you are not a programmer, or just want to save yourself the heartache of working with PayPal APIs, try setting up [PayPal Digital Goods with WooCommerce](http://www.woothemes.com/products/paypal-digital-goods-gateway/) - no code required.
 
 ## Why Use a Class
 
