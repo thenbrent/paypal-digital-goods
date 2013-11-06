@@ -1,13 +1,12 @@
 # PayPal Digital Goods PHP Library
 
-PayPal's Digital Goods for Express Checkout service is a wonderful payment solution with disjointed documentation and an unfortunately verbose name.
+[PayPal's Digital Goods for Express Checkout](https://www.paypal.com/us/webapps/mpp/digital-goods) service is a great payment solution with needlessly complicated API and an unfortunately verbose name.
 
-This class connects the dots in documentation and offers a library for using the [PayPal Digital Goods API](https://merchant.paypal.com/cgi-bin/marketingweb?cmd=_render-content&content_ID=merchant/digital_goods) that is friendly to humans (or human programmers at least).
-
-The library can be used to create both one off purchases and recurring payments (subscriptions).
+This library connects the dots to make it easier to write code for integrating with the [PayPal Digital Goods API](https://developer.paypal.com/webapps/developer/docs/classic/express-checkout/digital-goods/IntroducingExpressCheckoutDG/). It supports both one off purchases and recurring payments (subscriptions).
 
 To see the library in action, visit my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/).
 
+If you are not a programmer, or just want to save yourself the heartache of working with PayPal APIs, try setting up [PayPal Digital Goods with WooCommerce](http://www.woothemes.com/products/paypal-digital-goods-gateway/) - not code required.
 
 ## Why Use a Class
 
@@ -191,8 +190,9 @@ When cloning your application's Git repo, be sure to specify the --recursive opt
 
 PayPal has hidden some excellent articles within the x.commerce dev zone, including:
 
-* [An Overview of PayPal for Digital Goods](https://www.x.com/devzone/articles/overview-paypal-digital-goods)
-* [How to Implement PayPal Digital Goods](https://www.x.com/devzone/articles/how-implement-paypal-digital-goods)
+* [Marketing Overview of PayPal Digital Goods](https://www.paypal.com/us/webapps/mpp/digital-goods)
+* [Technical Overview of PayPal Digital Goods](https://developer.paypal.com/webapps/developer/docs/classic/express-checkout/digital-goods/IntroducingExpressCheckoutDG/)
+* [How to Implement PayPal Digital Goods](https://developer.paypal.com/webapps/developer/docs/classic/express-checkout/digital-goods/IntegratingExpressCheckoutDG/)
 
 
 ## Pull Requests
