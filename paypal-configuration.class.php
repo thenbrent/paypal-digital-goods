@@ -43,7 +43,8 @@ class PayPal_Digital_Goods_Configuration {
 		'username'      => '',
 		'password'      => '',
 		'signature'     => '',
-		'incontext_url' => 'yes'
+		'incontext_url' => 'yes',
+		'locale_code'   => 'US', // A special form of the locale for PayPal's mixed handling (i.e. expects 2 character for some locales and 5 for others. Full list here: https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/)
 		);
 
 	/**
@@ -52,11 +53,50 @@ class PayPal_Digital_Goods_Configuration {
 	 * @access private
 	 * @static
 	 */
-	private static $_validEnvironments = array( 
-		'live', 
-		'development', 
-		'sandbox' 
+	private static $_validEnvironments = array(
+		'live',
+		'development',
+		'sandbox'
 		);
+
+	/**
+	 * @var Valid environments, used for validation
+	 *
+	 * @access private
+	 * @static
+	 */
+	private static $_validLocales = array(
+		'AU', //  Australia
+		'AT', //  Austria
+		'BE', //  Belgium
+		'BR', //  Brazil
+		'CA', //  Canada
+		'CH', //  Switzerland
+		'CN', //  China
+		'DE', //  Germany
+		'ES', //  Spain
+		'GB', //  United Kingdom
+		'FR', //  France
+		'IT', //  Italy
+		'NL', //  Netherlands
+		'PL', //  Poland
+		'PT', //  Portugal
+		'RU', //  Russia
+		'US', //  United States
+		'da_DK', //  Danish (for Denmark only)
+		'he_IL', //  Hebrew (all)
+		'id_ID', //  Indonesian (for Indonesia only)
+		'ja_JP', //  Japanese (for Japan only)
+		'no_NO', //  Norwegian (for Norway only)
+		'pt_BR', //  Brazilian Portuguese (for Portugal and Brazil only)
+		'ru_RU', //  Russian (for Lithuania, Latvia, and Ukraine only)
+		'sv_SE', //  Swedish (for Sweden only)
+		'th_TH', //  Thai (for Thailand only)
+		'tr_TR', //  Turkish (for Turkey only)
+		'zh_CN', //  Simplified Chinese (for China only)
+		'zh_HK', //  Traditional Chinese (for Hong Kong only)
+		'zh_TW', //  Traditional Chinese (for Taiwan only)
+	);
 
 	/**
 	 * Reset the configuration to default settings
@@ -75,8 +115,9 @@ class PayPal_Digital_Goods_Configuration {
 			'username'      => '',
 			'password'      => '',
 			'signature'     => '',
-      'incontext_url' => 'yes'
-			);
+			'incontext_url' => 'yes',
+			'locale_code'   => 'US', // A special form of the locale for PayPal's mixed handling (i.e. expects 2 character for some locales and 5 for others. Full list here: https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/)
+		);
 	}
 
 	/**
@@ -192,9 +233,18 @@ class PayPal_Digital_Goods_Configuration {
 	public static function business_name( $value = null ) {
 		return self::set_or_get( __FUNCTION__ , $value );
 	}
-	
+
 	public static function incontext_url( $value = null ) {
 		return self::set_or_get( __FUNCTION__ , $value );
+	}
+
+	public static function locale_code( $value = null ) {
+
+		if ( null !== $value ) {
+			$value = self::map_locale( $value );
+		}
+
+		return self::set_or_get( __FUNCTION__, $value );
 	}
 
 	public static function version() {
@@ -236,14 +286,54 @@ class PayPal_Digital_Goods_Configuration {
 	 * @return string PayPal in context/webscr payment checkout URL
 	 */
 	public static function checkout_url() {
-    
-    if (self::$_cache['environment'] == 'sandbox') {      
-      $url = self::$_cache['incontext_url'] == 'yes' ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
-    } else {
-      $url = self::$_cache['incontext_url'] == 'yes' ? 'https://www.paypal.com/incontext?token=' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
-    }
-    
-    return $url;
+
+		if ( self::$_cache['environment'] == 'sandbox' ) {
+			$url = self::$_cache['incontext_url'] == 'yes' ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+		} else {
+			$url = self::$_cache['incontext_url'] == 'yes' ? 'https://www.paypal.com/incontext?token=' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+		}
+
+		return $url;
+	}
+
+	/**
+	 * For some locales, PayPal accept only a 2 letter country code. For others, they require a 5 character code.
+	 * To account for this, we map full 5 digit locale's here to their two digit counter part.
+	 *
+	 * For the full list of locales, see the `LOCALECODE` section of the PayPal NVP API documentation:
+	 * https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/
+	 *
+	 * @access public
+	 * @static
+	 * @param $locale The 5 character locale.
+	 * @return string A 2 character locale
+	 */
+	public static function map_locale( $locale ) {
+
+		if ( in_array( $locale, self::$_validLocales ) ) {
+
+			// Already a valid locale
+			$paypal_friendly_locale = $locale;
+
+		} else {
+
+			// We need to map it based on the last two characters
+			$shortened_locale = substr( $locale, -2 );
+
+			if ( in_array( $shortened_locale, self::$_validLocales ) ) {
+
+				// Already a valid locale
+				$paypal_friendly_locale = $shortened_locale;
+
+			} else {
+
+				$paypal_friendly_locale = 'US';
+
+			}
+
+		}
+
+		return $paypal_friendly_locale;
 	}
 
 }

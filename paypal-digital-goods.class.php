@@ -83,7 +83,8 @@ abstract class PayPal_Digital_Goods {
 			'solution_type' => 'Sole',
 			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
 			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url(),
-			'notify_url'    => PayPal_Digital_Goods_Configuration::notify_url()
+			'notify_url'    => PayPal_Digital_Goods_Configuration::notify_url(),
+			'locale_code'   => PayPal_Digital_Goods_Configuration::locale_code(), // Defaults to 'US'
 		);
 
 		$args = array_merge( $defaults, $args );
@@ -95,6 +96,7 @@ abstract class PayPal_Digital_Goods {
 		$this->cancel_url    = $args['cancel_url'];
 		$this->notify_url    = $args['notify_url'];
 		$this->solution_type = $args['solution_type'];
+		$this->locale_code   = $args['locale_code'];
 	}
 
 	/**
@@ -132,6 +134,7 @@ abstract class PayPal_Digital_Goods {
 			$api_request .= '&METHOD=SetExpressCheckout'
 						 .  '&RETURNURL=' . urlencode( $this->return_url )
 						 .  '&SOLUTIONTYPE=' . urlencode( $this->solution_type )
+						 .  '&LOCALECODE=' . urlencode( $this->locale_code )
 						 .  '&CANCELURL=' . urlencode( $this->cancel_url );
 
 			if( ! empty( $this->business_name ) )
