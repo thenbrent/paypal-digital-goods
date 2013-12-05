@@ -95,7 +95,7 @@ class PayPal_Digital_Goods_Configuration {
 		}
 
 		if ( $key === 'environment' && ! in_array( $value, self::$_validEnvironments ) ) {
-			throw new Exception('"' . $value . '" is not a valid environment.');
+			throw new Exception( '"' . $value . '" is not a valid environment.' );
 		}
 
 		if ( ! isset( self::$_cache[ $key ] ) ) {

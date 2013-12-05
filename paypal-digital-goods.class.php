@@ -279,13 +279,14 @@ abstract class PayPal_Digital_Goods {
 	 */
 	public function get_buy_button( $args = array() ){
 
-		$defaults = array(  'id'        => 'paypal-submit',
-							'type'      => 'anchor',
-							'href'      => PayPal_Digital_Goods_Configuration::checkout_url(),
-							'alt'       => 'Submit',
-							'get_token' => true,
-							'locale'    => 'en_US'
-					);
+		$defaults = array(
+			'id'        => 'paypal-submit',
+			'type'      => 'anchor',
+			'href'      => PayPal_Digital_Goods_Configuration::checkout_url(),
+			'alt'       => 'Submit',
+			'get_token' => true,
+			'locale'    => 'en_US'
+		);
 
 		$args = array_merge( $defaults, $args );
 

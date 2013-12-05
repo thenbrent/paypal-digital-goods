@@ -18,7 +18,6 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 */
 		private $purchase;
 
-
 		/**
 		 * Creates a PayPal Digital Goods Object configured according to the parameters in the args associative array. 
 		 * 
