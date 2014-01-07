@@ -179,11 +179,13 @@ class PayPal_Digital_Goods_Configuration {
 	private static function get( $key ) {
 
 		// Throw an exception if the value hasn't been set
-		if ( isset( self::$_cache[$key] ) && ( empty( self::$_cache[$key] ) ) )
+		if ( isset( self::$_cache[$key] ) && ( empty( self::$_cache[$key] ) ) ) {
 			throw new Exception( $key . ' needs to be set' );
+		}
 
-		if ( array_key_exists( $key, self::$_cache ) )
+		if ( array_key_exists( $key, self::$_cache ) ) {
 			return self::$_cache[$key];
+		}
 
 		// Return null by default to prevent __set from overloading
 		return null;
@@ -254,13 +256,15 @@ class PayPal_Digital_Goods_Configuration {
 
 	private static function set_or_get( $name, $value = null ) {
 
-		if ( ! empty( $value ) && is_array( $value ) )
+		if ( ! empty( $value ) && is_array( $value ) ) {
 			$value = $value[0];
+		}
 
-		if ( ! empty( $value ) )
+		if ( ! empty( $value ) ) {
 			self::set( $name, $value );
-		else
+		} else {
 			return self::get( $name );
+		}
 
 		return true;
 	}

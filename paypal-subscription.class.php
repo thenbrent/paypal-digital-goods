@@ -168,8 +168,9 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 */
 		public function get_details( $profile ){
 
-			if ( is_array( $profile ) && isset( $profile['PROFILEID'] ) )
+			if ( is_array( $profile ) && isset( $profile['PROFILEID'] ) ) {
 				$profile = $profile['PROFILEID'];
+			}
 
 			return $this->get_profile_details( $profile );
 		}
@@ -256,10 +257,11 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 									. '&TRIALTOTALBILLINGCYCLES=' . urlencode( $this->subscription->trial_total_cycles );
 				}
 
-				if( $this->subscription->add_to_next_bill == true )
+				if ( $this->subscription->add_to_next_bill == true ) {
 					$api_request  .= '&AUTOBILLOUTAMT=AddToNextBilling';
-				else
+				} else {
 					$api_request  .= '&AUTOBILLOUTAMT=NoAutoBill';
+				}
 
 			} elseif ( 'GetRecurringPaymentsProfileDetails' == $action ) {
 
@@ -272,8 +274,9 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 							  . '&PROFILEID=' . urlencode( $profile_id )
 							  . '&ACTION=' . urlencode( $status );
 
-				if ( isset( $args['note'] ) && ! empty( $args['note'] ) )
+				if ( isset( $args['note'] ) && ! empty( $args['note'] ) ) {
 					$api_request .= '&NOTE=' . urlencode( $args['note'] );
+				}
 
 			}
 
