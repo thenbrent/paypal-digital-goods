@@ -220,11 +220,13 @@ abstract class PayPal_Digital_Goods {
 		// An associative array is more usable than a parameter string
 		parse_str( $response, $parsed_response );
 
-		if( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) )
+		if ( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) ) {
 			exit( "Invalid HTTP Response for POST request($api_parameters) to " . PayPal_Digital_Goods_Configuration::endpoint() );
+		}
 
-		if( $parsed_response['ACK'] == 'Failure' )
+		if ( $parsed_response['ACK'] == 'Failure' ) {
 			exit( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
+		}
 
 		return $parsed_response;
 	}
@@ -234,8 +236,10 @@ abstract class PayPal_Digital_Goods {
 	 * Returns this instance of the class's token.
 	 */
 	public function token(){
-		if( empty( $this->token ) )
+
+		if ( empty( $this->token ) ) {
 			$this->request_checkout_token();
+		}
 
 		return $this->token;
 	}
