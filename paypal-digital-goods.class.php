@@ -334,8 +334,10 @@ abstract class PayPal_Digital_Goods {
 	 * Returns the Checkout URL including a token for this transaction. 
 	 */
 	public function get_checkout_url() {
-		if( empty( $this->token ) )
+
+		if ( empty( $this->token ) ) {
 			$this->request_checkout_token();
+		}
 
 		// Include the token in the href if the default href is not overridden
 		return PayPal_Digital_Goods_Configuration::checkout_url() . $this->token;
@@ -352,8 +354,9 @@ abstract class PayPal_Digital_Goods {
 	 **/
 	public function get_currency_symbol( $currency_code = '', $echo = false ){
 
-		if( empty( $currency_code ) )
+		if ( empty( $currency_code ) ) {
 			$currency_code = PayPal_Digital_Goods_Configuration::currency();
+		}
 
 		switch( $currency_code ) {
 			case 'AUD' :
