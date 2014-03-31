@@ -218,7 +218,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 			} elseif ( 'CreateRecurringPaymentsProfile' == $action ) {
 
 				$api_request  .=  '&METHOD=CreateRecurringPaymentsProfile' 
-								. '&TOKEN=' . $this->token
+								. '&TOKEN=' . urlencode( $this->token )
 
 								// Details
 								. '&DESC=' . urlencode( $this->subscription->description )
