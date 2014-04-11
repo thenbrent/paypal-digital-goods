@@ -1,8 +1,8 @@
 # PayPal Digital Goods PHP Library
 
-[PayPal's Digital Goods for Express Checkout](https://www.paypal.com/us/webapps/mpp/digital-goods) service is a great payment solution with needlessly complicated API and an unfortunately verbose name.
+[PayPal's Digital Goods for Express Checkout](https://www.paypal.com/us/webapps/mpp/digital-goods) service is a great payment solution with a needlessly complicated API and an unfortunately verbose name.
 
-This library connects the dots to make it easier to write code for integrating with the [PayPal Digital Goods API](https://developer.paypal.com/webapps/developer/docs/classic/express-checkout/digital-goods/IntroducingExpressCheckoutDG/). It supports both one off purchases and recurring payments (subscriptions).
+This library makes it easier to write code using the [PayPal Digital Goods API](https://developer.paypal.com/webapps/developer/docs/classic/express-checkout/digital-goods/IntroducingExpressCheckoutDG/). It supports both one off purchases and recurring payments (subscriptions).
 
 To see the library in action, visit my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/).
 
@@ -10,7 +10,7 @@ If you are not a programmer, or just want to save yourself the heartache of work
 
 ## Why Use a Class
 
-Using a distinct class for interacting with PayPal provides all the advantages you've come to love of Object-Oriented programming:
+Using a class to interact with the PayPal API provides all the advantages you love about Object-Oriented programming:
 
 * **Abstraction**: the complexity of the PayPal NVP API is hidden behind simple function calls for common operations.
 * **Encapsulation**: update your application to use the most recent version of the API without changing your application's code.
@@ -70,7 +70,8 @@ require_once( 'paypal-purchase.class.php' );
 $purchase_details = array(
 	'name'        => 'Digital Good Purchase Example',
 	'description' => 'Example Digital Good Purchase',
-	'amount'      => '12.00',
+	'amount'      => '14.50', // Total including tax
+	'tax_amount'      => '2.50', // Just the total tax amount
 	'items'       => array(
 		array( // First item
 			'item_name'        => 'First item name',
