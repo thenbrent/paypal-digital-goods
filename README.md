@@ -69,7 +69,8 @@ require_once( 'paypal-purchase.class.php' );
 $purchase_details = array(
 	'name'        => 'Digital Good Purchase Example',
 	'description' => 'Example Digital Good Purchase',
-	'amount'      => '12.00',
+	'amount'      => '14.50', // Total including tax
+	'tax_amount'      => '2.50', // Just the total tax amount
 	'items'       => array(
 		array( // First item
 			'item_name'        => 'First item name',
