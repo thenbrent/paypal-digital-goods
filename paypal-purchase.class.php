@@ -25,7 +25,7 @@ class PayPal_Purchase extends PayPal_Digital_Goods {
 		 * - purchase_details, array, details of the purchase.
 		 * 		- description, string, (Optional) Description of items the buyer is purchasing.
 		 * 		Transaction Totals:
-		 * 		- amount, double, required. Total cost of the transaction to the buyer.
+		 * 		- amount, double, required. Total cost of the transaction to the buyer, including tax.
 		 * 		- tax, double, default 0.00. The sum of tax for all items in this order. 
 		 * 		- invoice_number, string, (Optional) Your own invoice or tracking number. Can be up to 127 single-byte alphanumeric characters.
 		 * 		Item details:

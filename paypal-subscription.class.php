@@ -26,7 +26,7 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 		 * - subscription_details, array, details of the recurring payment profile to be created.
 		 * 		- description, string, Brief description of the subscription as shown to the subscriber in their PayPal account.
 		 * 		Subscription price parameters (default: $25 per month):
-		 * 		- amount, double, default 25.00. The price per period for the subscription.
+		 * 		- amount, double, default 25.00. The price per period for the subscription, including tax.
 		 * 		- initial_amount, double, default 0. An optional sign up fee.
 		 * 		- average_amount, double, default 25.00. The average transaction amount, PayPal default is $25, only set higher if your monthly subscription value is higher
 		 * 		Subscription temporal parameters (default: bill once per month forever):
