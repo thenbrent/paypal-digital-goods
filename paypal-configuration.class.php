@@ -44,6 +44,7 @@ class PayPal_Digital_Goods_Configuration {
 		'password'      => '',
 		'signature'     => '',
 		'incontext_url' => 'yes',
+		'mobile_url'    => 'no',
 		'locale_code'   => 'US', // A special form of the locale for PayPal's mixed handling (i.e. expects 2 character for some locales and 5 for others. Full list here: https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/)
 		);
 
@@ -116,6 +117,7 @@ class PayPal_Digital_Goods_Configuration {
 			'password'      => '',
 			'signature'     => '',
 			'incontext_url' => 'yes',
+			'mobile_url'    => 'no',
 			'locale_code'   => 'US', // A special form of the locale for PayPal's mixed handling (i.e. expects 2 character for some locales and 5 for others. Full list here: https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/)
 		);
 	}
@@ -240,6 +242,10 @@ class PayPal_Digital_Goods_Configuration {
 		return self::set_or_get( __FUNCTION__ , $value );
 	}
 
+	public static function mobile_url( $value = null ) {
+		return self::set_or_get( __FUNCTION__ , $value );
+	}
+
 	public static function locale_code( $value = null ) {
 
 		if ( null !== $value ) {
@@ -292,9 +298,21 @@ class PayPal_Digital_Goods_Configuration {
 	public static function checkout_url() {
 
 		if ( self::$_cache['environment'] == 'sandbox' ) {
-			$url = self::$_cache['incontext_url'] == 'yes' ? 'https://www.sandbox.paypal.com/incontext?token=' : 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+			if ( self::$_cache['mobile_url'] == 'yes' ) {
+				$url = 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout-mobile&token=';
+			} elseif( self::$_cache['incontext_url'] == 'yes' ) {
+				$url = 'https://www.sandbox.paypal.com/incontext?token=';
+			} else {
+				$url = 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+			}
 		} else {
-			$url = self::$_cache['incontext_url'] == 'yes' ? 'https://www.paypal.com/incontext?token=' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+			if ( self::$_cache['mobile_url'] == 'yes' ) {
+				$url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout-mobile&token=';
+			} elseif( self::$_cache['incontext_url'] == 'yes' ) {
+				$url = 'https://www.paypal.com/incontext?token=';
+			} else {
+				$url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=';
+			}
 		}
 
 		return $url;
