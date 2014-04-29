@@ -20,12 +20,6 @@ abstract class PayPal_Digital_Goods {
 	private $api_credentials;
 
 	/**
-	 * The PayPal API Version. 
-	 * Must be 65.1 or newer for Digital Goods. Defaults to 76
-	 */
-	private $version;
-
-	/**
 	 * The PayPal API URL Defaults to https://api-3t.sandbox.paypal.com/nvp when in
 	 * sandbox mode and https://api-3t.paypal.com/nvp when live.
 	 */
@@ -64,7 +58,6 @@ abstract class PayPal_Digital_Goods {
 	 * - solution_type, string, optional. Type of checkout flow. It is one of Sole (default, buyer does not need to create a PayPal account to check out) or Mark (buyer must have a PayPal account to check out)
 	 * - sandbox, boolean. Flag to indicate whether to use the PayPal Sandbox or live PayPal site. Default true - use sandbox.
 	 * - business_name, string. A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.
-	 * - version, string. The PayPal API version. Must be a minimum of 65.1. Default 76.0
 	 * 
 	 * @param api_credentials, required, a name => value array containing your API username, password and signature.
 	 * @param args, named parameters to customise the subscription and checkout process. See description for available parameters.
@@ -78,7 +71,6 @@ abstract class PayPal_Digital_Goods {
 
 		$defaults = array(
 			'sandbox'       => true,
-			'version'       => '76.0',
 			'business_name' => '',
 			'solution_type' => 'Sole',
 			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
