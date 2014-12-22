@@ -217,4 +217,4 @@ The class is written to be friendly to humans, so place special emphasis on read
 
 ## Other Notes
 
-Recurring payment are not available for German PayPal accounts.
+Recurring payments are not available for German PayPal accounts.
