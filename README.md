@@ -214,3 +214,7 @@ The class is written to be friendly to humans, so place special emphasis on read
 
 >Programs must be written for people to read, and only incidentally for machines to execute.
 >&#8212; [Structure and Interpretation of Computer Programs](http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-7.html)
+
+## Other Notes
+
+Recurring payment are not available for German PayPal accounts.
