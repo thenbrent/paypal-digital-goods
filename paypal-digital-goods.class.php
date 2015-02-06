@@ -65,9 +65,9 @@ abstract class PayPal_Digital_Goods {
 	public function __construct( $args = array() ){
 
 		if( '' == PayPal_Digital_Goods_Configuration::username() || '' == PayPal_Digital_Goods_Configuration::password() || '' == PayPal_Digital_Goods_Configuration::signature() )
-			exit( 'You must specify your PayPal API username, password & signature in the $api_credentials array. For details of how to ' );
+			throw new Exception( 'You must specify your PayPal API username, password & signature in the $api_credentials array.' );
 		elseif( ( empty( $args['return_url'] ) && '' == PayPal_Digital_Goods_Configuration::username() ) || ( empty( $args['cancel_url'] ) && '' == PayPal_Digital_Goods_Configuration::cancel_url() ) )
-			exit( 'You must specify a return_url & cancel_url.' );
+			throw new Exception( 'You must specify a return_url & cancel_url.' );
 
 		$defaults = array(
 			'sandbox'       => true,
@@ -207,8 +207,9 @@ abstract class PayPal_Digital_Goods {
 		$response = curl_exec( $ch );
 
 		// If no response was received from PayPal there is no point parsing the response
-		if( ! $response )
-			exit( $action . ' failed: ' . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')' );
+		if ( ! $response ) {
+			throw new Exception( $action . ' failed: ' . curl_error( $ch ) . '(' . curl_errno( $ch ) . ')' );
+		}
 
 		curl_close( $ch );
 
@@ -216,11 +217,11 @@ abstract class PayPal_Digital_Goods {
 		parse_str( $response, $parsed_response );
 
 		if ( ( 0 == sizeof( $parsed_response ) ) || ! array_key_exists( 'ACK', $parsed_response ) ) {
-			exit( "Invalid HTTP Response for POST request($api_parameters) to " . PayPal_Digital_Goods_Configuration::endpoint() );
+			throw new Exception( "Invalid HTTP Response for POST request($api_parameters) to " . PayPal_Digital_Goods_Configuration::endpoint() );
 		}
 
 		if ( $parsed_response['ACK'] == 'Failure' ) {
-			exit( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
+			throw new Exception( "Calling PayPal with action $action has Failed: " . $parsed_response['L_LONGMESSAGE0'], $parsed_response['L_ERRORCODE0'] );
 		}
 
 		return $parsed_response;
