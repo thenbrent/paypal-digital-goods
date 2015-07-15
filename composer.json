@@ -1,0 +1,17 @@
+{
+    "name": "thenbrent/paypal-digital-goods",
+    "description": "PayPal's Digital Goods for Express Checkout service is a great payment solution with a needlessly complicated API and an unfortunately verbose name. This library makes it easier to write code using the PayPal Digital Goods API. It supports both one off purchases and recurring payments (subscriptions).",
+    "type": "library",
+    "authors": [
+	{
+	    "name": "Brent Shepherd",
+	    "email": "admin@brent.io",
+	},
+        {
+	    "name": "Joseph Matthias Goh",
+            "email": "joseph@zephinzer.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
