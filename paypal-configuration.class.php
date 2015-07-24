@@ -34,18 +34,19 @@ class PayPal_Digital_Goods_Configuration {
 	 * @static
 	 */
 	private static $_cache = array(
-		'environment'   => 'sandbox',
-		'business_name' => '',
-		'cancel_url'    => '',
-		'return_url'    => '',
-		'notify_url'    => '',
-		'currency'      => 'USD',
-		'username'      => '',
-		'password'      => '',
-		'signature'     => '',
-		'incontext_url' => 'yes',
-		'mobile_url'    => 'no',
-		'locale_code'   => 'US', // A special form of the locale for PayPal's mixed handling (i.e. expects 2 character for some locales and 5 for others. Full list here: https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/)
+		'environment'     => 'sandbox',
+		'business_name'   => '',
+		'cancel_url'      => '',
+		'return_url'      => '',
+		'notify_url'      => '',
+		'currency'        => 'USD',
+		'username'        => '',
+		'password'        => '',
+		'signature'       => '',
+		'incontext_url'   => 'yes',
+		'mobile_url'      => 'no',
+		'display_address' => 'no',
+		'locale_code'     => 'US', // A special form of the locale for PayPal's mixed handling (i.e. expects 2 character for some locales and 5 for others. Full list here: https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/)
 		);
 
 	/**
@@ -107,18 +108,19 @@ class PayPal_Digital_Goods_Configuration {
 	 */
 	public static function reset() {
 		self::$_cache = array (
-			'environment'   => 'sandbox',
-			'business_name' => '',
-			'cancel_url'    => '',
-			'return_url'    => '',
-			'notify_url'    => '',
-			'currency'      => 'USD',
-			'username'      => '',
-			'password'      => '',
-			'signature'     => '',
-			'incontext_url' => 'yes',
-			'mobile_url'    => 'no',
-			'locale_code'   => 'US', // A special form of the locale for PayPal's mixed handling (i.e. expects 2 character for some locales and 5 for others. Full list here: https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/)
+			'environment'     => 'sandbox',
+			'business_name'   => '',
+			'cancel_url'      => '',
+			'return_url'      => '',
+			'notify_url'      => '',
+			'currency'        => 'USD',
+			'username'        => '',
+			'password'        => '',
+			'signature'       => '',
+			'incontext_url'   => 'yes',
+			'mobile_url'      => 'no',
+			'display_address' => 'no',
+			'locale_code'     => 'US', // A special form of the locale for PayPal's mixed handling (i.e. expects 2 character for some locales and 5 for others. Full list here: https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/)
 		);
 	}
 
@@ -243,6 +245,10 @@ class PayPal_Digital_Goods_Configuration {
 	}
 
 	public static function mobile_url( $value = null ) {
+		return self::set_or_get( __FUNCTION__ , $value );
+	}
+
+	public static function display_address( $value = null ) {
 		return self::set_or_get( __FUNCTION__ , $value );
 	}
 
