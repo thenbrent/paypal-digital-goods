@@ -70,13 +70,14 @@ abstract class PayPal_Digital_Goods {
 			throw new Exception( 'You must specify a return_url & cancel_url.' );
 
 		$defaults = array(
-			'sandbox'       => true,
-			'business_name' => '',
-			'solution_type' => 'Sole',
-			'return_url'    => PayPal_Digital_Goods_Configuration::return_url(),
-			'cancel_url'    => PayPal_Digital_Goods_Configuration::cancel_url(),
-			'notify_url'    => PayPal_Digital_Goods_Configuration::notify_url(),
-			'locale_code'   => PayPal_Digital_Goods_Configuration::locale_code(), // Defaults to 'US'
+			'sandbox'         => true,
+			'business_name'   => '',
+			'solution_type'   => 'Sole',
+			'return_url'      => PayPal_Digital_Goods_Configuration::return_url(),
+			'cancel_url'      => PayPal_Digital_Goods_Configuration::cancel_url(),
+			'notify_url'      => PayPal_Digital_Goods_Configuration::notify_url(),
+			'display_address' => PayPal_Digital_Goods_Configuration::display_address(),
+			'locale_code'     => PayPal_Digital_Goods_Configuration::locale_code(), // Defaults to 'US'
 		);
 
 		$args = array_merge( $defaults, $args );
@@ -84,11 +85,12 @@ abstract class PayPal_Digital_Goods {
 		$this->currency      = PayPal_Digital_Goods_Configuration::currency();
 		$this->business_name = $args['business_name'];
 
-		$this->return_url    = $args['return_url'];
-		$this->cancel_url    = $args['cancel_url'];
-		$this->notify_url    = $args['notify_url'];
-		$this->solution_type = $args['solution_type'];
-		$this->locale_code   = $args['locale_code'];
+		$this->return_url      = $args['return_url'];
+		$this->cancel_url      = $args['cancel_url'];
+		$this->notify_url      = $args['notify_url'];
+		$this->solution_type   = $args['solution_type'];
+		$this->display_address = $args['display_address'];
+		$this->locale_code     = $args['locale_code'];
 	}
 
 	/**
@@ -127,7 +129,8 @@ abstract class PayPal_Digital_Goods {
 						 .  '&RETURNURL=' . urlencode( $this->return_url )
 						 .  '&SOLUTIONTYPE=' . urlencode( $this->solution_type )
 						 .  '&LOCALECODE=' . urlencode( $this->locale_code )
-						 .  '&CANCELURL=' . urlencode( $this->cancel_url );
+						 .  '&CANCELURL=' . urlencode( $this->cancel_url )
+						 .  '&NOSHIPPING=' . ( $this->display_address == 'yes' ? 2 : 1 );
 
 			if( ! empty( $this->business_name ) )
 				$api_request  .=  '&BRANDNAME=' . urlencode( $this->business_name );
