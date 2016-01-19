@@ -107,6 +107,9 @@ Below is a quick example which creates a $2/week subscription for 4 weeks with a
 
 ```php
 <?php 
+
+require_once( 'paypal-subscription.class.php' );
+
 $subscription_details = array(
 	'description'        => 'Example Subscription: $10 sign-up fee then $2/week for the next four weeks.',
 	'initial_amount'     => '10.00',
