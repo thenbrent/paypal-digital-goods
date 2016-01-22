@@ -71,7 +71,7 @@ abstract class PayPal_Digital_Goods {
 
 		$defaults = array(
 			'sandbox'         => true,
-			'business_name'   => '',
+			'business_name'   => PayPal_Digital_Goods_Configuration::business_name(),
 			'solution_type'   => 'Sole',
 			'return_url'      => PayPal_Digital_Goods_Configuration::return_url(),
 			'cancel_url'      => PayPal_Digital_Goods_Configuration::cancel_url(),
