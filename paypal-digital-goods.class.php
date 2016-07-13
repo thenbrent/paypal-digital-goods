@@ -194,11 +194,7 @@ abstract class PayPal_Digital_Goods {
 		curl_setopt( $ch, CURLOPT_URL, PayPal_Digital_Goods_Configuration::endpoint() );
 		curl_setopt( $ch, CURLOPT_VERBOSE, 1 );
 
-		// Make sure we use TLS as PayPal no longer supports SSLv3: https://ppmts.custhelp.com/app/answers/detail/a_id/1191/session/L2F2LzEvdGltZS8xNDE2MzUyMTgwL3NpZC8tVzFLaU03bQ%3D%3D
-		curl_setopt( $ch, CURLOPT_SSLVERSION, 1 );
-
 		// Turn off server and peer verification
-		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, FALSE );
 		curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, FALSE );
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
 		curl_setopt( $ch, CURLOPT_POST, 1 );
