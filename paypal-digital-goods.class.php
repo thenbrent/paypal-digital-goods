@@ -103,7 +103,8 @@ abstract class PayPal_Digital_Goods {
 		return 'USER=' . urlencode( PayPal_Digital_Goods_Configuration::username() )
 			 . '&PWD=' . urlencode( PayPal_Digital_Goods_Configuration::password() )
 			 . '&SIGNATURE=' . urlencode( PayPal_Digital_Goods_Configuration::signature() )
-			 . '&VERSION='.  urlencode( PayPal_Digital_Goods_Configuration::version() );
+			 . '&VERSION='.  urlencode( PayPal_Digital_Goods_Configuration::version() )
+             . '&BUTTONSOURCE=' . urlencode( PayPal_Digital_Goods_Configuration::buttonsource() );
 	}
 
 

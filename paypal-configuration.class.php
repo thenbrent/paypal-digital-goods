@@ -220,6 +220,10 @@ class PayPal_Digital_Goods_Configuration {
 		return self::set_or_get( __FUNCTION__ , $value );
 	}
 
+    public static function buttonsource( $value = 'AngellEYE_SP_ThenBrent' ) {
+        return self::set_or_get( __FUNCTION__ , $value );
+    }
+
 	public static function currency( $value = null ) {
 		return self::set_or_get( __FUNCTION__ , $value );
 	}
