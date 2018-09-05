@@ -350,3 +350,5 @@ class PayPal_Subscription extends PayPal_Digital_Goods{
 
 
 }
+
+// Unfortunately, when a subscription is created, no notification is sent " NotifyUrl "
