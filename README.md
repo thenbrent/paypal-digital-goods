@@ -1,5 +1,7 @@
 # PayPal Digital Goods PHP Library
 
+> **Important:** PayPal Digital Goods is deprecated as of January 1, 2017. PayPal continues to support existing merchants using this method, but new features and enhancements will not be applied to these integrations. For new integrations, see the [PayPal Checkout Integration Guide](https://developer.paypal.com/docs/checkout/).
+
 [PayPal's Digital Goods for Express Checkout](https://www.paypal.com/us/webapps/mpp/digital-goods) service is a great payment solution with a needlessly complicated API and an unfortunately verbose name.
 
 This library makes it easier to write code using the [PayPal Digital Goods API](https://developer.paypal.com/webapps/developer/docs/classic/express-checkout/digital-goods/IntroducingExpressCheckoutDG/). It supports both one off purchases and recurring payments (subscriptions).
@@ -211,4 +213,6 @@ The class is written to be friendly to humans, so place special emphasis on read
 
 ## Other Notes
 
-Recurring payments are not available for German PayPal accounts.
+**PayPal Digital Goods is deprecated as of January 1, 2017**. PayPal continues to support existing merchants using this method, but new features and enhancements will not be applied to these integrations. For new integrations, see the [PayPal Checkout Integration Guide](https://developer.paypal.com/docs/checkout/).
+
+Also, recurring payments are not available for German PayPal accounts.
