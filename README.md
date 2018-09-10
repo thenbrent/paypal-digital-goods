@@ -4,8 +4,6 @@
 
 This library makes it easier to write code using the [PayPal Digital Goods API](https://developer.paypal.com/webapps/developer/docs/classic/express-checkout/digital-goods/IntroducingExpressCheckoutDG/). It supports both one off purchases and recurring payments (subscriptions).
 
-To see the library in action, visit my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/).
-
 If you are not a programmer, or just want to save yourself the heartache of working with PayPal APIs, try setting up [PayPal Digital Goods with WooCommerce](http://www.woothemes.com/products/paypal-digital-goods-gateway/) - no code required.
 
 ## Why Use a Class
@@ -21,13 +19,6 @@ Using a class to interact with the PayPal API provides all the advantages you lo
 Like to learn by example?
 
 Check out the [PayPal Digital Goods PHP Examples](https://github.com/thenbrent/paypal-digital-goods-php-examples/) repository.
-
-
-# Live Demo
-
-Want to see a live example of Recurring Payments with PayPal's Digital Goods for Express Checkout? 
-
-Take a look at my [PayPal Digital Goods Demo](http://paypal.brentshepherd.com/).
 
 
 # Usage
